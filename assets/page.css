@@ -1,29 +1,33 @@
+/*
+ * Page-level styles for sheen viewer.
+ * Theme colors are inherited from github-markdown-css which defines
+ * --bgColor-default, --fgColor-default, etc. via [data-theme] and
+ * @media (prefers-color-scheme) selectors on .markdown-body.
+ *
+ * For the header and status bar (outside .markdown-body), we define
+ * our own variables that mirror the github-markdown-css palette.
+ */
+
 :root {
-  --color-fg: #1f2328;
-  --color-bg: #ffffff;
-  --color-bg-secondary: #f6f8fa;
-  --color-border: #d1d9e0;
-  --color-header-bg: #f6f8fa;
-  --color-header-fg: #1f2328;
+  --sheen-fg: #1f2328;
+  --sheen-bg: #ffffff;
+  --sheen-bg-secondary: #f6f8fa;
+  --sheen-border: #d1d9e0;
 }
 
 [data-theme="dark"] {
-  --color-fg: #e6edf3;
-  --color-bg: #0d1117;
-  --color-bg-secondary: #161b22;
-  --color-border: #30363d;
-  --color-header-bg: #161b22;
-  --color-header-fg: #e6edf3;
+  --sheen-fg: #e6edf3;
+  --sheen-bg: #0d1117;
+  --sheen-bg-secondary: #161b22;
+  --sheen-border: #30363d;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-fg: #e6edf3;
-    --color-bg: #0d1117;
-    --color-bg-secondary: #161b22;
-    --color-border: #30363d;
-    --color-header-bg: #161b22;
-    --color-header-fg: #e6edf3;
+    --sheen-fg: #e6edf3;
+    --sheen-bg: #0d1117;
+    --sheen-bg-secondary: #161b22;
+    --sheen-border: #30363d;
   }
 }
 
@@ -34,8 +38,8 @@
 html, body {
   margin: 0;
   padding: 0;
-  background-color: var(--color-bg);
-  color: var(--color-fg);
+  background-color: var(--sheen-bg);
+  color: var(--sheen-fg);
   transition: background-color 0.2s, color 0.2s;
 }
 
@@ -47,11 +51,11 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 8px 24px;
-  background-color: var(--color-header-bg);
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--sheen-bg-secondary);
+  border-bottom: 1px solid var(--sheen-border);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
   font-size: 14px;
-  color: var(--color-header-fg);
+  color: var(--sheen-fg);
 }
 
 .header-left {
@@ -70,18 +74,18 @@ html, body {
 
 .theme-toggle {
   background: none;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--sheen-border);
   border-radius: 6px;
   padding: 4px 8px;
   cursor: pointer;
-  color: var(--color-header-fg);
+  color: var(--sheen-fg);
   font-size: 14px;
   line-height: 1;
   transition: border-color 0.2s;
 }
 
 .theme-toggle:hover {
-  border-color: var(--color-fg);
+  border-color: var(--sheen-fg);
 }
 
 .container {
@@ -108,9 +112,9 @@ html, body {
   border-radius: 12px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 12px;
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  color: var(--color-header-fg);
+  background-color: var(--sheen-bg-secondary);
+  border: 1px solid var(--sheen-border);
+  color: var(--sheen-fg);
   opacity: 0;
   transition: opacity 0.3s;
   pointer-events: none;

@@ -30,6 +30,7 @@
     // Theme handling
     (function() {
       var html = document.documentElement;
+      var mdBody = document.getElementById('content');
       var btn = document.getElementById('theme-toggle');
       var icon = document.getElementById('theme-icon');
       var stored = localStorage.getItem('sheen-theme');
@@ -37,8 +38,10 @@
       function applyTheme(theme) {
         if (theme === 'dark' || theme === 'light') {
           html.setAttribute('data-theme', theme);
+          mdBody.setAttribute('data-theme', theme);
         } else {
           html.removeAttribute('data-theme');
+          mdBody.removeAttribute('data-theme');
         }
         icon.textContent = getEffectiveTheme() === 'dark' ? '☀️' : '🌙';
       }
