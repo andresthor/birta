@@ -6,12 +6,12 @@ input_file: tests/fixtures/kitchen_sink.md
 <h1><a href="#kitchen-sink" aria-hidden="true" class="anchor" id="kitchen-sink"></a>Kitchen Sink</h1>
 <p>Every supported feature in one document.</p>
 <h2><a href="#inline-formatting" aria-hidden="true" class="anchor" id="inline-formatting"></a>Inline Formatting</h2>
-<p><strong>Bold</strong>, <em>italic</em>, <em><strong>bold italic</strong></em>, <del>strikethrough</del>, <code>inline code</code>.</p>
+<p><strong>Bold</strong>, <em>italic</em>, <strong><em>bold italic</em></strong>, <del>strikethrough</del>, <code>inline code</code>.</p>
 <h2><a href="#links" aria-hidden="true" class="anchor" id="links"></a>Links</h2>
 <p><a href="https://example.com">Regular link</a>, auto-linked <a href="https://example.com">https://example.com</a>, and <a href="https://example.com" title="Example">reference link</a>.</p>
 <h2><a href="#images" aria-hidden="true" class="anchor" id="images"></a>Images</h2>
-<p><img src="/local/photo.png" alt="local image" /></p>
-<p><img src="https://example.com/logo.png" alt="remote image" /></p>
+<p><img src="/local/assets/local_image.svg" alt="local image" /></p>
+<p><img src="https://placehold.co/300x200/fff8c5/9a6700/?text=remote+image" alt="remote image" /></p>
 <h2><a href="#headings" aria-hidden="true" class="anchor" id="headings"></a>Headings</h2>
 <h3><a href="#third-level" aria-hidden="true" class="anchor" id="third-level"></a>Third Level</h3>
 <h4><a href="#fourth-level" aria-hidden="true" class="anchor" id="fourth-level"></a>Fourth Level</h4>

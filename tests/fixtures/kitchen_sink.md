@@ -4,7 +4,7 @@ Every supported feature in one document.
 
 ## Inline Formatting
 
-**Bold**, *italic*, ***bold italic***, ~~strikethrough~~, `inline code`.
+**Bold**, _italic_, **_bold italic_**, ~~strikethrough~~, `inline code`.
 
 ## Links
 
@@ -14,9 +14,9 @@ Every supported feature in one document.
 
 ## Images
 
-![local image](photo.png)
+![local image](assets/local_image.svg)
 
-![remote image](https://example.com/logo.png)
+![remote image](https://placehold.co/300x200/fff8c5/9a6700/?text=remote+image)
 
 ## Headings
 
@@ -58,11 +58,11 @@ Another term
 
 ## Table
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Rendering | Done | comrak |
-| Live reload | Done | WebSocket |
-| Syntax highlighting | Done | syntect |
+| Feature             | Status | Notes     |
+| ------------------- | ------ | --------- |
+| Rendering           | Done   | comrak    |
+| Live reload         | Done   | WebSocket |
+| Syntax highlighting | Done   | syntect   |
 
 ## Code Blocks
 
@@ -111,6 +111,7 @@ Plain code block with no language specified.
 Text with a footnote[^1] and another[^named].
 
 [^1]: First footnote.
+
 [^named]: A named footnote with **bold**.
 
 ## Interactive Elements
