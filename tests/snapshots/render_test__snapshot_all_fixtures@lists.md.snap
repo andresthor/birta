@@ -1,0 +1,25 @@
+---
+source: tests/render_test.rs
+expression: html
+input_file: tests/fixtures/lists.md
+---
+<ul>
+<li>Item one</li>
+<li>Item two
+<ul>
+<li>Nested item</li>
+<li>Another nested</li>
+</ul>
+</li>
+<li>Item three</li>
+</ul>
+<ol>
+<li>First</li>
+<li>Second</li>
+<li>Third</li>
+</ol>
+<dl>
+<dt>Term</dt>
+<dd>Definition one</dd>
+<dd>Definition two</dd>
+</dl>

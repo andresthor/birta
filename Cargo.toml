@@ -6,3 +6,7 @@ description = "Preview markdown files in the browser with GitHub-style rendering
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
+comrak = { version = "0.51", default-features = false, features = ["shortcodes"] }
+
+[dev-dependencies]
+insta = { version = "1.46.3", features = ["glob"] }

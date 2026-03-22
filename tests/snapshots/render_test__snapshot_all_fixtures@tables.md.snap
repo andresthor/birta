@@ -1,0 +1,44 @@
+---
+source: tests/render_test.rs
+expression: html
+input_file: tests/fixtures/tables.md
+---
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Supported</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tables</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>GFM</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th align="left">Left</th>
+<th align="center">Center</th>
+<th align="right">Right</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">a</td>
+<td align="center">b</td>
+<td align="right">c</td>
+</tr>
+<tr>
+<td align="left">d</td>
+<td align="center">e</td>
+<td align="right">f</td>
+</tr>
+</tbody>
+</table>

@@ -1,0 +1,16 @@
+---
+source: tests/render_test.rs
+expression: html
+input_file: tests/fixtures/code_blocks.md
+---
+<p>Inline <code>code</code> here.</p>
+<pre lang="rust"><code>fn main() {
+    println!(&quot;Hello, world!&quot;);
+}
+</code></pre>
+<pre lang="python"><code>def greet(name):
+    print(f&quot;Hello, {name}!&quot;)
+</code></pre>
+<pre><code>indented code block
+with two lines
+</code></pre>

@@ -1,0 +1,14 @@
+---
+source: tests/render_test.rs
+expression: html
+input_file: tests/fixtures/task_lists.md
+---
+<ul>
+<li><input type="checkbox" checked="" disabled="" /> Completed task</li>
+<li><input type="checkbox" disabled="" /> Incomplete task</li>
+<li><input type="checkbox" checked="" disabled="" /> Another completed task</li>
+</ul>
+<ol>
+<li><input type="checkbox" disabled="" /> Ordered incomplete</li>
+<li><input type="checkbox" checked="" disabled="" /> Ordered completed</li>
+</ol>
