@@ -1,0 +1,146 @@
+---
+source: tests/render_test.rs
+expression: html
+input_file: tests/fixtures/kitchen_sink.md
+---
+<h1><a href="#kitchen-sink" aria-hidden="true" class="anchor" id="kitchen-sink"></a>Kitchen Sink</h1>
+<p>Every supported feature in one document.</p>
+<h2><a href="#inline-formatting" aria-hidden="true" class="anchor" id="inline-formatting"></a>Inline Formatting</h2>
+<p><strong>Bold</strong>, <em>italic</em>, <em><strong>bold italic</strong></em>, <del>strikethrough</del>, <code>inline code</code>.</p>
+<h2><a href="#links" aria-hidden="true" class="anchor" id="links"></a>Links</h2>
+<p><a href="https://example.com">Regular link</a>, auto-linked <a href="https://example.com">https://example.com</a>, and <a href="https://example.com" title="Example">reference link</a>.</p>
+<h2><a href="#images" aria-hidden="true" class="anchor" id="images"></a>Images</h2>
+<p><img src="/local/photo.png" alt="local image" /></p>
+<p><img src="https://example.com/logo.png" alt="remote image" /></p>
+<h2><a href="#headings" aria-hidden="true" class="anchor" id="headings"></a>Headings</h2>
+<h3><a href="#third-level" aria-hidden="true" class="anchor" id="third-level"></a>Third Level</h3>
+<h4><a href="#fourth-level" aria-hidden="true" class="anchor" id="fourth-level"></a>Fourth Level</h4>
+<h5><a href="#fifth-level" aria-hidden="true" class="anchor" id="fifth-level"></a>Fifth Level</h5>
+<h6><a href="#sixth-level" aria-hidden="true" class="anchor" id="sixth-level"></a>Sixth Level</h6>
+<h2><a href="#lists" aria-hidden="true" class="anchor" id="lists"></a>Lists</h2>
+<h3><a href="#unordered" aria-hidden="true" class="anchor" id="unordered"></a>Unordered</h3>
+<ul>
+<li>Item one
+<ul>
+<li>Nested item
+<ul>
+<li>Deeply nested</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Item two</li>
+</ul>
+<h3><a href="#ordered" aria-hidden="true" class="anchor" id="ordered"></a>Ordered</h3>
+<ol>
+<li>First</li>
+<li>Second</li>
+<li>Third</li>
+</ol>
+<h3><a href="#task-list" aria-hidden="true" class="anchor" id="task-list"></a>Task List</h3>
+<ul>
+<li><input type="checkbox" checked="" disabled="" /> Completed task</li>
+<li><input type="checkbox" disabled="" /> Incomplete task</li>
+</ul>
+<h3><a href="#description-list" aria-hidden="true" class="anchor" id="description-list"></a>Description List</h3>
+<dl>
+<dt>Term</dt>
+<dd>Definition of the term</dd>
+<dt>Another term</dt>
+<dd>Its definition</dd>
+</dl>
+<h2><a href="#table" aria-hidden="true" class="anchor" id="table"></a>Table</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rendering</td>
+<td>Done</td>
+<td>comrak</td>
+</tr>
+<tr>
+<td>Live reload</td>
+<td>Done</td>
+<td>WebSocket</td>
+</tr>
+<tr>
+<td>Syntax highlighting</td>
+<td>Done</td>
+<td>syntect</td>
+</tr>
+</tbody>
+</table>
+<h2><a href="#code-blocks" aria-hidden="true" class="anchor" id="code-blocks"></a>Code Blocks</h2>
+<pre class="syntax-highlighting"><code><span class="source rust"><span class="meta function rust"><span class="meta function rust"><span class="storage type function rust">fn</span> </span><span class="entity name function rust">main</span></span><span class="meta function rust"><span class="meta function parameters rust"><span class="punctuation section parameters begin rust">(</span></span><span class="meta function rust"><span class="meta function parameters rust"><span class="punctuation section parameters end rust">)</span></span></span></span><span class="meta function rust"> </span><span class="meta function rust"><span class="meta block rust"><span class="punctuation section block begin rust">{</span>
+    <span class="support macro rust">println!</span><span class="meta group rust"><span class="punctuation section group begin rust">(</span></span><span class="meta group rust"><span class="string quoted double rust"><span class="punctuation definition string begin rust">&quot;</span>Hello, sheen!<span class="punctuation definition string end rust">&quot;</span></span></span><span class="meta group rust"><span class="punctuation section group end rust">)</span></span><span class="punctuation terminator rust">;</span>
+</span><span class="meta block rust"><span class="punctuation section block end rust">}</span></span></span>
+</span></code></pre>
+<pre class="syntax-highlighting"><code><span class="source python"><span class="meta function python"><span class="storage type function python">def</span> <span class="entity name function python"><span class="meta generic-name python">greet</span></span></span><span class="meta function parameters python"><span class="punctuation section parameters begin python">(</span></span><span class="meta function parameters python"><span class="variable parameter python">name</span></span><span class="meta function parameters annotation python"><span class="punctuation separator annotation parameter python">:</span> <span class="meta qualified-name python"><span class="support type python">str</span></span></span><span class="meta function parameters python"><span class="punctuation section parameters end python">)</span></span><span class="meta function python"> </span><span class="meta function annotation return python"><span class="punctuation separator annotation return python">-&gt;</span> <span class="meta qualified-name python"><span class="support type python">str</span></span></span><span class="meta function python"><span class="punctuation section function begin python">:</span></span>
+    <span class="keyword control flow return python">return</span> <span class="storage type string python">f</span><span class="meta string interpolated python"><span class="string quoted double python"><span class="punctuation definition string begin python">&quot;</span></span></span><span class="meta string interpolated python"><span class="string quoted double python">Hello, </span><span class="meta interpolation python"><span class="punctuation section interpolation begin python">{</span><span class="source python embedded"><span class="meta qualified-name python"><span class="meta generic-name python">name</span></span></span></span><span class="meta interpolation python"><span class="punctuation section interpolation end python">}</span></span><span class="string quoted double python">!<span class="punctuation definition string end python">&quot;</span></span></span>
+</span></code></pre>
+<pre class="syntax-highlighting"><code><span class="text plain">Plain code block with no language specified.
+</span></code></pre>
+<h2><a href="#blockquote" aria-hidden="true" class="anchor" id="blockquote"></a>Blockquote</h2>
+<blockquote>
+<p>Simple blockquote.</p>
+<p>With multiple paragraphs.</p>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>Nested blockquote.</p>
+</blockquote>
+</blockquote>
+<h2><a href="#alerts" aria-hidden="true" class="anchor" id="alerts"></a>Alerts</h2>
+<div class="markdown-alert markdown-alert-note">
+<p class="markdown-alert-title">Note</p>
+<p>This is a note alert.</p>
+</div>
+<div class="markdown-alert markdown-alert-tip">
+<p class="markdown-alert-title">Tip</p>
+<p>This is a tip alert.</p>
+</div>
+<div class="markdown-alert markdown-alert-important">
+<p class="markdown-alert-title">Important</p>
+<p>This is an important alert.</p>
+</div>
+<div class="markdown-alert markdown-alert-warning">
+<p class="markdown-alert-title">Warning</p>
+<p>This is a warning alert.</p>
+</div>
+<div class="markdown-alert markdown-alert-caution">
+<p class="markdown-alert-title">Caution</p>
+<p>This is a caution alert.</p>
+</div>
+<h2><a href="#footnotes" aria-hidden="true" class="anchor" id="footnotes"></a>Footnotes</h2>
+<p>Text with a footnote<sup class="footnote-ref"><a href="#fn-1" id="fnref-1" data-footnote-ref>1</a></sup> and another<sup class="footnote-ref"><a href="#fn-named" id="fnref-named" data-footnote-ref>2</a></sup>.</p>
+<h2><a href="#interactive-elements" aria-hidden="true" class="anchor" id="interactive-elements"></a>Interactive Elements</h2>
+<details>
+<summary>Click to expand</summary>
+<p>Hidden content with a <a href="https://example.com">link</a> and <strong>bold</strong>.</p>
+</details>
+<h2><a href="#horizontal-rule" aria-hidden="true" class="anchor" id="horizontal-rule"></a>Horizontal Rule</h2>
+<hr />
+<h2><a href="#emoji-shortcodes" aria-hidden="true" class="anchor" id="emoji-shortcodes"></a>Emoji Shortcodes</h2>
+<p>👋 🚀 ✨</p>
+<h2><a href="#html-passthrough" aria-hidden="true" class="anchor" id="html-passthrough"></a>HTML Passthrough</h2>
+<div align="center">
+  <em>Centered italic text via raw HTML</em>
+</div>
+<h2><a href="#autolink" aria-hidden="true" class="anchor" id="autolink"></a>Autolink</h2>
+<p>Visit <a href="https://example.com">https://example.com</a> or email <a href="mailto:user@example.com">user@example.com</a>.</p>
+<section class="footnotes" data-footnotes>
+<ol>
+<li id="fn-1">
+<p>First footnote. <a href="#fnref-1" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="1" aria-label="Back to reference 1">↩</a></p>
+</li>
+<li id="fn-named">
+<p>A named footnote with <strong>bold</strong>. <a href="#fnref-named" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="2" aria-label="Back to reference 2">↩</a></p>
+</li>
+</ol>
+</section>
