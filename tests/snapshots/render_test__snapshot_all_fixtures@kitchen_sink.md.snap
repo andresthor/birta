@@ -3,80 +3,80 @@ source: tests/render_test.rs
 expression: html
 input_file: tests/fixtures/kitchen_sink.md
 ---
-<h1><a href="#kitchen-sink" aria-hidden="true" class="anchor" id="kitchen-sink"></a>Kitchen Sink</h1>
-<p>Every supported feature in one document.</p>
-<h2><a href="#inline-formatting" aria-hidden="true" class="anchor" id="inline-formatting"></a>Inline Formatting</h2>
-<p><strong>Bold</strong>, <em>italic</em>, <strong><em>bold italic</em></strong>, <del>strikethrough</del>, <code>inline code</code>.</p>
-<h2><a href="#links" aria-hidden="true" class="anchor" id="links"></a>Links</h2>
-<p><a href="https://example.com">Regular link</a>, auto-linked <a href="https://example.com">https://example.com</a>, and <a href="https://example.com" title="Example">reference link</a>.</p>
-<h2><a href="#images" aria-hidden="true" class="anchor" id="images"></a>Images</h2>
-<p><img src="/local/assets/local_image.svg" alt="local image" /></p>
-<p><img src="https://placehold.co/300x200/fff8c5/9a6700/?text=remote+image" alt="remote image" /></p>
-<h2><a href="#headings" aria-hidden="true" class="anchor" id="headings"></a>Headings</h2>
-<h3><a href="#third-level" aria-hidden="true" class="anchor" id="third-level"></a>Third Level</h3>
-<h4><a href="#fourth-level" aria-hidden="true" class="anchor" id="fourth-level"></a>Fourth Level</h4>
-<h5><a href="#fifth-level" aria-hidden="true" class="anchor" id="fifth-level"></a>Fifth Level</h5>
-<h6><a href="#sixth-level" aria-hidden="true" class="anchor" id="sixth-level"></a>Sixth Level</h6>
-<h2><a href="#lists" aria-hidden="true" class="anchor" id="lists"></a>Lists</h2>
-<h3><a href="#unordered" aria-hidden="true" class="anchor" id="unordered"></a>Unordered</h3>
-<ul>
-<li>Item one
-<ul>
-<li>Nested item
-<ul>
-<li>Deeply nested</li>
+<h1 data-sourcepos="1:1-1:14"><a href="#kitchen-sink" aria-hidden="true" class="anchor" id="kitchen-sink"></a>Kitchen Sink</h1>
+<p data-sourcepos="3:1-3:40">Every supported feature in one document.</p>
+<h2 data-sourcepos="5:1-5:20"><a href="#inline-formatting" aria-hidden="true" class="anchor" id="inline-formatting"></a>Inline Formatting</h2>
+<p data-sourcepos="7:1-7:72"><strong data-sourcepos="7:1-7:8">Bold</strong>, <em data-sourcepos="7:11-7:18">italic</em>, <strong data-sourcepos="7:21-7:37"><em data-sourcepos="7:23-7:35">bold italic</em></strong>, <del data-sourcepos="7:40-7:56">strikethrough</del>, <code data-sourcepos="7:59-7:71">inline code</code>.</p>
+<h2 data-sourcepos="9:1-9:8"><a href="#links" aria-hidden="true" class="anchor" id="links"></a>Links</h2>
+<p data-sourcepos="11:1-11:96"><a data-sourcepos="11:1-11:35" href="https://example.com">Regular link</a>, auto-linked <a data-sourcepos="11:50-11:68" href="https://example.com">https://example.com</a>, and <a data-sourcepos="11:75-11:95" href="https://example.com" title="Example">reference link</a>.</p>
+<h2 data-sourcepos="15:1-15:9"><a href="#images" aria-hidden="true" class="anchor" id="images"></a>Images</h2>
+<p data-sourcepos="17:1-17:38"><img data-sourcepos="17:1-17:38" src="/local/assets/local_image.svg" alt="local image" /></p>
+<p data-sourcepos="19:1-19:78"><img data-sourcepos="19:1-19:78" src="https://placehold.co/300x200/fff8c5/9a6700/?text=remote+image" alt="remote image" /></p>
+<h2 data-sourcepos="21:1-21:11"><a href="#headings" aria-hidden="true" class="anchor" id="headings"></a>Headings</h2>
+<h3 data-sourcepos="23:1-23:15"><a href="#third-level" aria-hidden="true" class="anchor" id="third-level"></a>Third Level</h3>
+<h4 data-sourcepos="25:1-25:17"><a href="#fourth-level" aria-hidden="true" class="anchor" id="fourth-level"></a>Fourth Level</h4>
+<h5 data-sourcepos="27:1-27:17"><a href="#fifth-level" aria-hidden="true" class="anchor" id="fifth-level"></a>Fifth Level</h5>
+<h6 data-sourcepos="29:1-29:18"><a href="#sixth-level" aria-hidden="true" class="anchor" id="sixth-level"></a>Sixth Level</h6>
+<h2 data-sourcepos="31:1-31:8"><a href="#lists" aria-hidden="true" class="anchor" id="lists"></a>Lists</h2>
+<h3 data-sourcepos="33:1-33:13"><a href="#unordered" aria-hidden="true" class="anchor" id="unordered"></a>Unordered</h3>
+<ul data-sourcepos="35:1-38:10">
+<li data-sourcepos="35:1-37:19">Item one
+<ul data-sourcepos="36:3-37:19">
+<li data-sourcepos="36:3-37:19">Nested item
+<ul data-sourcepos="37:5-37:19">
+<li data-sourcepos="37:5-37:19">Deeply nested</li>
 </ul>
 </li>
 </ul>
 </li>
-<li>Item two</li>
+<li data-sourcepos="38:1-39:0">Item two</li>
 </ul>
-<h3><a href="#ordered" aria-hidden="true" class="anchor" id="ordered"></a>Ordered</h3>
-<ol>
-<li>First</li>
-<li>Second</li>
-<li>Third</li>
+<h3 data-sourcepos="40:1-40:11"><a href="#ordered" aria-hidden="true" class="anchor" id="ordered"></a>Ordered</h3>
+<ol data-sourcepos="42:1-44:8">
+<li data-sourcepos="42:1-42:8">First</li>
+<li data-sourcepos="43:1-43:9">Second</li>
+<li data-sourcepos="44:1-45:0">Third</li>
 </ol>
-<h3><a href="#task-list" aria-hidden="true" class="anchor" id="task-list"></a>Task List</h3>
-<ul>
-<li><input type="checkbox" checked="" disabled="" /> Completed task</li>
-<li><input type="checkbox" disabled="" /> Incomplete task</li>
+<h3 data-sourcepos="46:1-46:13"><a href="#task-list" aria-hidden="true" class="anchor" id="task-list"></a>Task List</h3>
+<ul data-sourcepos="48:1-49:21">
+<li data-sourcepos="48:1-48:20"><input type="checkbox" checked="" disabled="" /> Completed task</li>
+<li data-sourcepos="49:1-50:0"><input type="checkbox" disabled="" /> Incomplete task</li>
 </ul>
-<h3><a href="#description-list" aria-hidden="true" class="anchor" id="description-list"></a>Description List</h3>
-<dl>
-<dt>Term</dt>
-<dd>Definition of the term</dd>
-<dt>Another term</dt>
-<dd>Its definition</dd>
+<h3 data-sourcepos="51:1-51:20"><a href="#description-list" aria-hidden="true" class="anchor" id="description-list"></a>Description List</h3>
+<dl data-sourcepos="53:1-58:0">
+<dt data-sourcepos="53:1-53:1">Term</dt>
+<dd data-sourcepos="54:1-54:24">Definition of the term</dd>
+<dt data-sourcepos="56:1-56:1">Another term</dt>
+<dd data-sourcepos="57:1-57:16">Its definition</dd>
 </dl>
-<h2><a href="#table" aria-hidden="true" class="anchor" id="table"></a>Table</h2>
-<table>
+<h2 data-sourcepos="59:1-59:8"><a href="#table" aria-hidden="true" class="anchor" id="table"></a>Table</h2>
+<table data-sourcepos="61:1-65:44">
 <thead>
-<tr>
-<th>Feature</th>
-<th>Status</th>
-<th>Notes</th>
+<tr data-sourcepos="61:1-61:44">
+<th data-sourcepos="61:2-61:22">Feature</th>
+<th data-sourcepos="61:24-61:31">Status</th>
+<th data-sourcepos="61:33-61:43">Notes</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>Rendering</td>
-<td>Done</td>
-<td>comrak</td>
+<tr data-sourcepos="63:1-63:44">
+<td data-sourcepos="63:2-63:22">Rendering</td>
+<td data-sourcepos="63:24-63:31">Done</td>
+<td data-sourcepos="63:33-63:43">comrak</td>
 </tr>
-<tr>
-<td>Live reload</td>
-<td>Done</td>
-<td>WebSocket</td>
+<tr data-sourcepos="64:1-64:44">
+<td data-sourcepos="64:2-64:22">Live reload</td>
+<td data-sourcepos="64:24-64:31">Done</td>
+<td data-sourcepos="64:33-64:43">WebSocket</td>
 </tr>
-<tr>
-<td>Syntax highlighting</td>
-<td>Done</td>
-<td>syntect</td>
+<tr data-sourcepos="65:1-65:44">
+<td data-sourcepos="65:2-65:22">Syntax highlighting</td>
+<td data-sourcepos="65:24-65:31">Done</td>
+<td data-sourcepos="65:33-65:43">syntect</td>
 </tr>
 </tbody>
 </table>
-<h2><a href="#code-blocks" aria-hidden="true" class="anchor" id="code-blocks"></a>Code Blocks</h2>
+<h2 data-sourcepos="67:1-67:14"><a href="#code-blocks" aria-hidden="true" class="anchor" id="code-blocks"></a>Code Blocks</h2>
 <pre class="syntax-highlighting"><code><span class="source rust"><span class="meta function rust"><span class="meta function rust"><span class="storage type function rust">fn</span> </span><span class="entity name function rust">main</span></span><span class="meta function rust"><span class="meta function parameters rust"><span class="punctuation section parameters begin rust">(</span></span><span class="meta function rust"><span class="meta function parameters rust"><span class="punctuation section parameters end rust">)</span></span></span></span><span class="meta function rust"> </span><span class="meta function rust"><span class="meta block rust"><span class="punctuation section block begin rust">{</span>
     <span class="support macro rust">println!</span><span class="meta group rust"><span class="punctuation section group begin rust">(</span></span><span class="meta group rust"><span class="string quoted double rust"><span class="punctuation definition string begin rust">&quot;</span>Hello, sheen!<span class="punctuation definition string end rust">&quot;</span></span></span><span class="meta group rust"><span class="punctuation section group end rust">)</span></span><span class="punctuation terminator rust">;</span>
 </span><span class="meta block rust"><span class="punctuation section block end rust">}</span></span></span>
@@ -86,78 +86,78 @@ input_file: tests/fixtures/kitchen_sink.md
 </span></code></pre>
 <pre class="syntax-highlighting"><code><span class="text plain">Plain code block with no language specified.
 </span></code></pre>
-<h2><a href="#blockquote" aria-hidden="true" class="anchor" id="blockquote"></a>Blockquote</h2>
-<blockquote>
-<p>Simple blockquote.</p>
-<p>With multiple paragraphs.</p>
+<h2 data-sourcepos="84:1-84:13"><a href="#blockquote" aria-hidden="true" class="anchor" id="blockquote"></a>Blockquote</h2>
+<blockquote data-sourcepos="86:1-88:27">
+<p data-sourcepos="86:3-86:20">Simple blockquote.</p>
+<p data-sourcepos="88:3-88:27">With multiple paragraphs.</p>
 </blockquote>
-<blockquote>
-<blockquote>
-<p>Nested blockquote.</p>
+<blockquote data-sourcepos="90:1-90:22">
+<blockquote data-sourcepos="90:3-90:22">
+<p data-sourcepos="90:5-90:22">Nested blockquote.</p>
 </blockquote>
 </blockquote>
-<h2><a href="#alerts" aria-hidden="true" class="anchor" id="alerts"></a>Alerts</h2>
-<div class="markdown-alert markdown-alert-note">
+<h2 data-sourcepos="92:1-92:9"><a href="#alerts" aria-hidden="true" class="anchor" id="alerts"></a>Alerts</h2>
+<div class="markdown-alert markdown-alert-note" data-sourcepos="94:1-95:23">
 <p class="markdown-alert-title">Note</p>
-<p>This is a note alert.</p>
+<p data-sourcepos="95:3-95:23">This is a note alert.</p>
 </div>
-<div class="markdown-alert markdown-alert-tip">
+<div class="markdown-alert markdown-alert-tip" data-sourcepos="97:1-98:22">
 <p class="markdown-alert-title">Tip</p>
-<p>This is a tip alert.</p>
+<p data-sourcepos="98:3-98:22">This is a tip alert.</p>
 </div>
-<div class="markdown-alert markdown-alert-important">
+<div class="markdown-alert markdown-alert-important" data-sourcepos="100:1-101:29">
 <p class="markdown-alert-title">Important</p>
-<p>This is an important alert.</p>
+<p data-sourcepos="101:3-101:29">This is an important alert.</p>
 </div>
-<div class="markdown-alert markdown-alert-warning">
+<div class="markdown-alert markdown-alert-warning" data-sourcepos="103:1-104:26">
 <p class="markdown-alert-title">Warning</p>
-<p>This is a warning alert.</p>
+<p data-sourcepos="104:3-104:26">This is a warning alert.</p>
 </div>
-<div class="markdown-alert markdown-alert-caution">
+<div class="markdown-alert markdown-alert-caution" data-sourcepos="106:1-107:26">
 <p class="markdown-alert-title">Caution</p>
-<p>This is a caution alert.</p>
+<p data-sourcepos="107:3-107:26">This is a caution alert.</p>
 </div>
-<h2><a href="#footnotes" aria-hidden="true" class="anchor" id="footnotes"></a>Footnotes</h2>
-<p>Text with a footnote<sup class="footnote-ref"><a href="#fn-1" id="fnref-1" data-footnote-ref>1</a></sup> and another<sup class="footnote-ref"><a href="#fn-named" id="fnref-named" data-footnote-ref>2</a></sup>.</p>
-<h2><a href="#interactive-elements" aria-hidden="true" class="anchor" id="interactive-elements"></a>Interactive Elements</h2>
+<h2 data-sourcepos="109:1-109:12"><a href="#footnotes" aria-hidden="true" class="anchor" id="footnotes"></a>Footnotes</h2>
+<p data-sourcepos="111:1-111:45">Text with a footnote<sup data-sourcepos="111:21-111:24" class="footnote-ref"><a href="#fn-1" id="fnref-1" data-footnote-ref>1</a></sup> and another<sup data-sourcepos="111:37-111:44" class="footnote-ref"><a href="#fn-named" id="fnref-named" data-footnote-ref>2</a></sup>.</p>
+<h2 data-sourcepos="117:1-117:23"><a href="#interactive-elements" aria-hidden="true" class="anchor" id="interactive-elements"></a>Interactive Elements</h2>
 <details>
 <summary>Click to expand</summary>
-<p>Hidden content with a <a href="https://example.com">link</a> and <strong>bold</strong>.</p>
+<p data-sourcepos="122:1-122:63">Hidden content with a <a data-sourcepos="122:23-122:49" href="https://example.com">link</a> and <strong data-sourcepos="122:55-122:62">bold</strong>.</p>
 </details>
-<h2><a href="#horizontal-rule" aria-hidden="true" class="anchor" id="horizontal-rule"></a>Horizontal Rule</h2>
-<hr />
-<h2><a href="#emoji-shortcodes" aria-hidden="true" class="anchor" id="emoji-shortcodes"></a>Emoji Shortcodes</h2>
-<p>👋 🚀 ✨</p>
-<h2><a href="#html-passthrough" aria-hidden="true" class="anchor" id="html-passthrough"></a>HTML Passthrough</h2>
+<h2 data-sourcepos="126:1-126:18"><a href="#horizontal-rule" aria-hidden="true" class="anchor" id="horizontal-rule"></a>Horizontal Rule</h2>
+<hr data-sourcepos="128:1-128:3" />
+<h2 data-sourcepos="130:1-130:19"><a href="#emoji-shortcodes" aria-hidden="true" class="anchor" id="emoji-shortcodes"></a>Emoji Shortcodes</h2>
+<p data-sourcepos="132:1-132:26">👋 🚀 ✨</p>
+<h2 data-sourcepos="134:1-134:19"><a href="#html-passthrough" aria-hidden="true" class="anchor" id="html-passthrough"></a>HTML Passthrough</h2>
 <div align="center">
   <em>Centered italic text via raw HTML</em>
 </div>
-<h2><a href="#autolink" aria-hidden="true" class="anchor" id="autolink"></a>Autolink</h2>
-<p>Visit <a href="https://example.com">https://example.com</a> or email <a href="mailto:user@example.com">user@example.com</a>.</p>
-<h2><a href="#math" aria-hidden="true" class="anchor" id="math"></a>Math</h2>
-<p>Inline math: <span data-math-style="inline">E = mc^2</span></p>
-<p>Display math:</p>
-<p><span data-math-style="display">
+<h2 data-sourcepos="140:1-140:11"><a href="#autolink" aria-hidden="true" class="anchor" id="autolink"></a>Autolink</h2>
+<p data-sourcepos="142:1-142:52">Visit <a data-sourcepos="142:7-142:25" href="https://example.com">https://example.com</a> or email <a data-sourcepos="142:36-142:51" href="mailto:user@example.com">user@example.com</a>.</p>
+<h2 data-sourcepos="144:1-144:7"><a href="#math" aria-hidden="true" class="anchor" id="math"></a>Math</h2>
+<p data-sourcepos="146:1-146:23">Inline math: <span data-math-style="inline" data-sourcepos="146:14-146:23">E = mc^2</span></p>
+<p data-sourcepos="148:1-148:13">Display math:</p>
+<p data-sourcepos="150:1-152:2"><span data-math-style="display" data-sourcepos="150:1-152:2">
 \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
 </span></p>
-<p>Code-style inline: <code data-math-style="inline">\alpha + \beta</code></p>
-<p>Code-style display:</p>
-<pre lang="math" data-math-style="display"><code>\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+<p data-sourcepos="154:1-154:37">Code-style inline: <code data-math-style="inline" data-sourcepos="154:20-154:37">\alpha + \beta</code></p>
+<p data-sourcepos="156:1-156:19">Code-style display:</p>
+<pre lang="math" data-math-style="display" data-sourcepos="158:1-160:3"><code>\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
 </code></pre>
-<p>Mixed: The equation <span data-math-style="inline">a^2 + b^2 = c^2</span> is well known.</p>
-<h2><a href="#mermaid-diagrams" aria-hidden="true" class="anchor" id="mermaid-diagrams"></a>Mermaid Diagrams</h2>
+<p data-sourcepos="162:1-162:52">Mixed: The equation <span data-math-style="inline" data-sourcepos="162:21-162:37">a^2 + b^2 = c^2</span> is well known.</p>
+<h2 data-sourcepos="164:1-164:19"><a href="#mermaid-diagrams" aria-hidden="true" class="anchor" id="mermaid-diagrams"></a>Mermaid Diagrams</h2>
 <pre class="mermaid">graph TD
     A[Start] --&gt; B{Decision}
     B --&gt;|Yes| C[OK]
     B --&gt;|No| D[End]
 </pre>
-<section class="footnotes" data-footnotes>
+<section data-sourcepos="113:1-113:21" class="footnotes" data-footnotes>
 <ol>
-<li id="fn-1">
-<p>First footnote. <a href="#fnref-1" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="1" aria-label="Back to reference 1">↩</a></p>
+<li data-sourcepos="113:1-113:21" id="fn-1">
+<p data-sourcepos="113:7-113:21">First footnote. <a href="#fnref-1" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="1" aria-label="Back to reference 1">↩</a></p>
 </li>
-<li id="fn-named">
-<p>A named footnote with <strong>bold</strong>. <a href="#fnref-named" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="2" aria-label="Back to reference 2">↩</a></p>
+<li data-sourcepos="115:1-115:41" id="fn-named">
+<p data-sourcepos="115:11-115:41">A named footnote with <strong data-sourcepos="115:33-115:40">bold</strong>. <a href="#fnref-named" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="2" aria-label="Back to reference 2">↩</a></p>
 </li>
 </ol>
 </section>

@@ -9,7 +9,7 @@ use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::extract::{Path, State};
 use axum::http::{StatusCode, header};
 use axum::response::{Html, IntoResponse, Response};
-use axum::routing::get;
+use axum::routing::{get, post};
 use tokio::net::TcpListener;
 use tokio::sync::{Notify, RwLock, broadcast};
 
@@ -21,11 +21,17 @@ struct AppState {
     base_dir: PathBuf,
     current_html: RwLock<String>,
     tx: broadcast::Sender<String>,
+    scroll_tx: broadcast::Sender<u32>,
     connections: AtomicUsize,
     all_disconnected: Notify,
 }
 
-pub async fn run(file: PathBuf, port: u16, no_open: bool, custom_css: Option<&str>) -> anyhow::Result<()> {
+pub async fn run(
+    file: PathBuf,
+    port: u16,
+    no_open: bool,
+    custom_css: Option<&str>,
+) -> anyhow::Result<()> {
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = TcpListener::bind(addr).await?;
     let actual_addr = listener.local_addr()?;
@@ -48,7 +54,12 @@ pub async fn run(file: PathBuf, port: u16, no_open: bool, custom_css: Option<&st
 }
 
 /// Serve markdown read from stdin (no file watching).
-pub async fn run_stdin(markdown: &str, port: u16, no_open: bool, custom_css: Option<&str>) -> anyhow::Result<()> {
+pub async fn run_stdin(
+    markdown: &str,
+    port: u16,
+    no_open: bool,
+    custom_css: Option<&str>,
+) -> anyhow::Result<()> {
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = TcpListener::bind(addr).await?;
     let actual_addr = listener.local_addr()?;
@@ -67,11 +78,13 @@ pub async fn run_stdin(markdown: &str, port: u16, no_open: bool, custom_css: Opt
     let base_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
 
     let (tx, _rx) = broadcast::channel::<String>(16);
+    let (scroll_tx, _) = broadcast::channel::<u32>(16);
 
     let state = Arc::new(AppState {
         base_dir,
         current_html: RwLock::new(content_html),
         tx,
+        scroll_tx,
         connections: AtomicUsize::new(0),
         all_disconnected: Notify::new(),
     });
@@ -88,7 +101,11 @@ pub async fn run_stdin(markdown: &str, port: u16, no_open: bool, custom_css: Opt
 ///
 /// Watches the file for changes and pushes updates over WebSocket.
 /// Shuts down automatically when the last browser tab disconnects.
-pub async fn start(file: PathBuf, listener: TcpListener, custom_css: Option<&str>) -> anyhow::Result<()> {
+pub async fn start(
+    file: PathBuf,
+    listener: TcpListener,
+    custom_css: Option<&str>,
+) -> anyhow::Result<()> {
     let markdown = std::fs::read_to_string(&file)?;
     let content_html = render::render(&markdown);
 
@@ -105,11 +122,13 @@ pub async fn start(file: PathBuf, listener: TcpListener, custom_css: Option<&str
         .unwrap_or_else(|| PathBuf::from("."));
 
     let (tx, _rx) = broadcast::channel::<String>(16);
+    let (scroll_tx, _) = broadcast::channel::<u32>(16);
 
     let state = Arc::new(AppState {
         base_dir,
         current_html: RwLock::new(content_html),
         tx: tx.clone(),
+        scroll_tx,
         connections: AtomicUsize::new(0),
         all_disconnected: Notify::new(),
     });
@@ -189,9 +208,15 @@ fn router(page: String, state: Arc<AppState>) -> Router {
         .route("/", get(move || async move { Html(page) }))
         .route("/health", get(|| async { "ok" }))
         .route("/ws", get(ws_handler))
+        .route("/scroll/{line}", post(scroll_handler))
         .route("/local/{*path}", get(local_file_handler))
         .route("/favicon.ico", get(|| async { StatusCode::NO_CONTENT }))
         .with_state(state)
+}
+
+async fn scroll_handler(Path(line): Path<u32>, State(state): State<Arc<AppState>>) -> StatusCode {
+    let _ = state.scroll_tx.send(line);
+    StatusCode::NO_CONTENT
 }
 
 async fn local_file_handler(
@@ -237,6 +262,7 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
     }
 
     let mut rx = state.tx.subscribe();
+    let mut scroll_rx = state.scroll_tx.subscribe();
 
     loop {
         tokio::select! {
@@ -248,6 +274,14 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
                         }
                     }
                     Err(_) => break,
+                }
+            }
+            result = scroll_rx.recv() => {
+                if let Ok(line) = result {
+                    let msg = format!(r#"{{"type":"scroll","line":{line}}}"#);
+                    if socket.send(Message::Text(msg.into())).await.is_err() {
+                        break;
+                    }
                 }
             }
             msg = socket.recv() => {
@@ -274,10 +308,12 @@ mod tests {
     fn test_router() -> Router {
         let page = template::render_page("test.md", "<p>hello</p>", None);
         let (tx, _rx) = broadcast::channel(16);
+        let (scroll_tx, _) = broadcast::channel(16);
         let state = Arc::new(AppState {
             base_dir: PathBuf::from("."),
             current_html: RwLock::new("<p>hello</p>".to_string()),
             tx,
+            scroll_tx,
             connections: AtomicUsize::new(0),
             all_disconnected: Notify::new(),
         });
@@ -332,10 +368,12 @@ mod tests {
     fn test_router_with_base_dir(base_dir: PathBuf) -> Router {
         let page = template::render_page("test.md", "<p>hello</p>", None);
         let (tx, _rx) = broadcast::channel(16);
+        let (scroll_tx, _) = broadcast::channel(16);
         let state = Arc::new(AppState {
             base_dir,
             current_html: RwLock::new("<p>hello</p>".to_string()),
             tx,
+            scroll_tx,
             connections: AtomicUsize::new(0),
             all_disconnected: Notify::new(),
         });

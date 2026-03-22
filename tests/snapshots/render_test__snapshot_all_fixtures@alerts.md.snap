@@ -3,31 +3,31 @@ source: tests/render_test.rs
 expression: html
 input_file: tests/fixtures/alerts.md
 ---
-<div class="markdown-alert markdown-alert-note">
+<div class="markdown-alert markdown-alert-note" data-sourcepos="1:1-2:23">
 <p class="markdown-alert-title">Note</p>
-<p>This is a note alert.</p>
+<p data-sourcepos="2:3-2:23">This is a note alert.</p>
 </div>
-<div class="markdown-alert markdown-alert-tip">
+<div class="markdown-alert markdown-alert-tip" data-sourcepos="4:1-5:22">
 <p class="markdown-alert-title">Tip</p>
-<p>This is a tip alert.</p>
+<p data-sourcepos="5:3-5:22">This is a tip alert.</p>
 </div>
-<div class="markdown-alert markdown-alert-important">
+<div class="markdown-alert markdown-alert-important" data-sourcepos="7:1-8:29">
 <p class="markdown-alert-title">Important</p>
-<p>This is an important alert.</p>
+<p data-sourcepos="8:3-8:29">This is an important alert.</p>
 </div>
-<div class="markdown-alert markdown-alert-warning">
+<div class="markdown-alert markdown-alert-warning" data-sourcepos="10:1-11:26">
 <p class="markdown-alert-title">Warning</p>
-<p>This is a warning alert.</p>
+<p data-sourcepos="11:3-11:26">This is a warning alert.</p>
 </div>
-<div class="markdown-alert markdown-alert-caution">
+<div class="markdown-alert markdown-alert-caution" data-sourcepos="13:1-14:26">
 <p class="markdown-alert-title">Caution</p>
-<p>This is a caution alert.</p>
+<p data-sourcepos="14:3-14:26">This is a caution alert.</p>
 </div>
-<div class="markdown-alert markdown-alert-note">
+<div class="markdown-alert markdown-alert-note" data-sourcepos="16:1-20:17">
 <p class="markdown-alert-title">Note</p>
-<p>Alert with <strong>bold</strong>, <code>code</code>, and a <a href="https://example.com">link</a>.</p>
-<ul>
-<li>List item one</li>
-<li>List item two</li>
+<p data-sourcepos="17:3-17:65">Alert with <strong data-sourcepos="17:14-17:21">bold</strong>, <code data-sourcepos="17:24-17:29">code</code>, and a <a data-sourcepos="17:38-17:64" href="https://example.com">link</a>.</p>
+<ul data-sourcepos="19:3-20:17">
+<li data-sourcepos="19:3-19:17">List item one</li>
+<li data-sourcepos="20:3-20:17">List item two</li>
 </ul>
 </div>

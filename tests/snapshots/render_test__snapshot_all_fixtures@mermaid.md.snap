@@ -8,7 +8,7 @@ input_file: tests/fixtures/mermaid.md
     B --&gt;|Yes| C[OK]
     B --&gt;|No| D[End]
 </pre>
-<p>Text between diagrams.</p>
+<p data-sourcepos="8:1-8:22">Text between diagrams.</p>
 <pre class="mermaid">sequenceDiagram
     Alice-&gt;&gt;Bob: Hello
     Bob--&gt;&gt;Alice: Hi

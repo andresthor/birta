@@ -74,6 +74,7 @@ fn options() -> Options<'static> {
     // Rendering
     options.render.github_pre_lang = true;
     options.render.r#unsafe = true;
+    options.render.sourcepos = true;
 
     options
 }

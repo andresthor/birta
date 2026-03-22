@@ -3,7 +3,7 @@ source: tests/render_test.rs
 expression: html
 input_file: tests/fixtures/code_blocks.md
 ---
-<p>Inline <code>code</code> here.</p>
+<p data-sourcepos="1:1-1:19">Inline <code data-sourcepos="1:8-1:13">code</code> here.</p>
 <pre class="syntax-highlighting"><code><span class="source rust"><span class="meta function rust"><span class="meta function rust"><span class="storage type function rust">fn</span> </span><span class="entity name function rust">main</span></span><span class="meta function rust"><span class="meta function parameters rust"><span class="punctuation section parameters begin rust">(</span></span><span class="meta function rust"><span class="meta function parameters rust"><span class="punctuation section parameters end rust">)</span></span></span></span><span class="meta function rust"> </span><span class="meta function rust"><span class="meta block rust"><span class="punctuation section block begin rust">{</span>
     <span class="support macro rust">println!</span><span class="meta group rust"><span class="punctuation section group begin rust">(</span></span><span class="meta group rust"><span class="string quoted double rust"><span class="punctuation definition string begin rust">&quot;</span>Hello, world!<span class="punctuation definition string end rust">&quot;</span></span></span><span class="meta group rust"><span class="punctuation section group end rust">)</span></span><span class="punctuation terminator rust">;</span>
 </span><span class="meta block rust"><span class="punctuation section block end rust">}</span></span></span>

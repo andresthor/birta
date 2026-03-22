@@ -5,13 +5,13 @@ input_file: tests/fixtures/interactive.md
 ---
 <details>
 <summary>Click to expand</summary>
-<p>This content is hidden by default.</p>
-<ul>
-<li>Item one</li>
-<li>Item two</li>
+<p data-sourcepos="4:1-4:34">This content is hidden by default.</p>
+<ul data-sourcepos="6:1-7:10">
+<li data-sourcepos="6:1-6:10">Item one</li>
+<li data-sourcepos="7:1-8:0">Item two</li>
 </ul>
 </details>
 <details open>
 <summary>Already open</summary>
-<p>This section starts expanded.</p>
+<p data-sourcepos="14:1-14:29">This section starts expanded.</p>
 </details>

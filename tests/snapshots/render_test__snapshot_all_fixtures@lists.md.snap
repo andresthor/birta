@@ -3,23 +3,23 @@ source: tests/render_test.rs
 expression: html
 input_file: tests/fixtures/lists.md
 ---
-<ul>
-<li>Item one</li>
-<li>Item two
-<ul>
-<li>Nested item</li>
-<li>Another nested</li>
+<ul data-sourcepos="1:1-5:12">
+<li data-sourcepos="1:1-1:10">Item one</li>
+<li data-sourcepos="2:1-4:18">Item two
+<ul data-sourcepos="3:3-4:18">
+<li data-sourcepos="3:3-3:15">Nested item</li>
+<li data-sourcepos="4:3-4:18">Another nested</li>
 </ul>
 </li>
-<li>Item three</li>
+<li data-sourcepos="5:1-6:0">Item three</li>
 </ul>
-<ol>
-<li>First</li>
-<li>Second</li>
-<li>Third</li>
+<ol data-sourcepos="7:1-9:8">
+<li data-sourcepos="7:1-7:8">First</li>
+<li data-sourcepos="8:1-8:9">Second</li>
+<li data-sourcepos="9:1-9:8">Third</li>
 </ol>
-<dl>
-<dt>Term</dt>
-<dd>Definition one</dd>
-<dd>Definition two</dd>
+<dl data-sourcepos="11:1-13:16">
+<dt data-sourcepos="11:1-11:1">Term</dt>
+<dd data-sourcepos="12:1-12:16">Definition one</dd>
+<dd data-sourcepos="13:1-13:16">Definition two</dd>
 </dl>

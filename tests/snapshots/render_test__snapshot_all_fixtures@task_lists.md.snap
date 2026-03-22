@@ -3,12 +3,12 @@ source: tests/render_test.rs
 expression: html
 input_file: tests/fixtures/task_lists.md
 ---
-<ul>
-<li><input type="checkbox" checked="" disabled="" /> Completed task</li>
-<li><input type="checkbox" disabled="" /> Incomplete task</li>
-<li><input type="checkbox" checked="" disabled="" /> Another completed task</li>
+<ul data-sourcepos="1:1-3:28">
+<li data-sourcepos="1:1-1:20"><input type="checkbox" checked="" disabled="" /> Completed task</li>
+<li data-sourcepos="2:1-2:21"><input type="checkbox" disabled="" /> Incomplete task</li>
+<li data-sourcepos="3:1-4:0"><input type="checkbox" checked="" disabled="" /> Another completed task</li>
 </ul>
-<ol>
-<li><input type="checkbox" disabled="" /> Ordered incomplete</li>
-<li><input type="checkbox" checked="" disabled="" /> Ordered completed</li>
+<ol data-sourcepos="5:1-6:24">
+<li data-sourcepos="5:1-5:25"><input type="checkbox" disabled="" /> Ordered incomplete</li>
+<li data-sourcepos="6:1-6:24"><input type="checkbox" checked="" disabled="" /> Ordered completed</li>
 </ol>

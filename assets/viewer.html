@@ -116,6 +116,32 @@
       setTimeout(renderAll, 0);
     }
 
+    // Scroll synchronization
+    // Finds the nearest element at or before the given source line and scrolls to it.
+    // comrak's sourcepos format: "start_line:start_col-end_line:end_col"
+    function scrollToLine(targetLine) {
+      var els = content.querySelectorAll('[data-sourcepos]');
+      if (!els.length) return;
+
+      // Binary search for the last element with start_line <= targetLine
+      var best = null;
+      var lo = 0, hi = els.length - 1;
+      while (lo <= hi) {
+        var mid = (lo + hi) >> 1;
+        var line = parseInt(els[mid].getAttribute('data-sourcepos'), 10);
+        if (line <= targetLine) {
+          best = els[mid];
+          lo = mid + 1;
+        } else {
+          hi = mid - 1;
+        }
+      }
+
+      if (best) {
+        best.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
     // WebSocket live reload
     (function() {
       var content = document.getElementById('content');
@@ -142,7 +168,13 @@
         };
 
         ws.onmessage = function(event) {
-          content.innerHTML = event.data;
+          var data = event.data;
+          if (data.charAt(0) === '{') {
+            var msg = JSON.parse(data);
+            if (msg.type === 'scroll') scrollToLine(msg.line);
+            return;
+          }
+          content.innerHTML = data;
           renderMath();
           renderMermaid();
         };

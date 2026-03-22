@@ -3,8 +3,8 @@ source: tests/render_test.rs
 expression: html
 input_file: tests/fixtures/inline_formatting.md
 ---
-<p><strong>Bold text</strong> and <em>italic text</em> and <em><strong>bold italic</strong></em>.</p>
-<p><del>Strikethrough text</del> is supported.</p>
-<p>This is an autolink: <a href="https://example.com">https://example.com</a></p>
-<p>And a regular <a href="https://example.com" title="Example">link</a>.</p>
-<p><img src="/local/image.png" alt="Alt text" /></p>
+<p data-sourcepos="1:1-1:54"><strong data-sourcepos="1:1-1:13">Bold text</strong> and <em data-sourcepos="1:19-1:31">italic text</em> and <em data-sourcepos="1:37-1:53"><strong data-sourcepos="1:38-1:52">bold italic</strong></em>.</p>
+<p data-sourcepos="3:1-3:36"><del data-sourcepos="3:1-3:22">Strikethrough text</del> is supported.</p>
+<p data-sourcepos="5:1-5:40">This is an autolink: <a data-sourcepos="5:22-5:40" href="https://example.com">https://example.com</a></p>
+<p data-sourcepos="7:1-7:52">And a regular <a data-sourcepos="7:15-7:51" href="https://example.com" title="Example">link</a>.</p>
+<p data-sourcepos="9:1-9:22"><img data-sourcepos="9:1-9:22" src="/local/image.png" alt="Alt text" /></p>
