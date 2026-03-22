@@ -201,9 +201,24 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
 
     let mut rx = state.tx.subscribe();
 
-    while let Ok(html) = rx.recv().await {
-        if socket.send(Message::Text(html.into())).await.is_err() {
-            break;
+    loop {
+        tokio::select! {
+            result = rx.recv() => {
+                match result {
+                    Ok(html) => {
+                        if socket.send(Message::Text(html.into())).await.is_err() {
+                            break;
+                        }
+                    }
+                    Err(_) => break,
+                }
+            }
+            msg = socket.recv() => {
+                // Client disconnected or sent close frame
+                if msg.is_none() || msg.is_some_and(|m| m.is_err()) {
+                    break;
+                }
+            }
         }
     }
 
