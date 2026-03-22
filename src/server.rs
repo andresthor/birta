@@ -1,6 +1,8 @@
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::time::Duration;
 
 use axum::Router;
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
@@ -9,14 +11,18 @@ use axum::http::{StatusCode, header};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
 use tokio::net::TcpListener;
-use tokio::sync::{RwLock, broadcast};
+use tokio::sync::{Notify, RwLock, broadcast};
 
 use crate::{render, template, watcher};
+
+const SHUTDOWN_GRACE_PERIOD: Duration = Duration::from_secs(5);
 
 struct AppState {
     base_dir: PathBuf,
     current_html: RwLock<String>,
     tx: broadcast::Sender<String>,
+    connections: AtomicUsize,
+    all_disconnected: Notify,
 }
 
 pub async fn run(file: PathBuf, port: u16, no_open: bool) -> anyhow::Result<()> {
@@ -44,6 +50,7 @@ pub async fn run(file: PathBuf, port: u16, no_open: bool) -> anyhow::Result<()> 
 /// Start serving a markdown file on the given listener.
 ///
 /// Watches the file for changes and pushes updates over WebSocket.
+/// Shuts down automatically when the last browser tab disconnects.
 pub async fn start(file: PathBuf, listener: TcpListener) -> anyhow::Result<()> {
     let markdown = std::fs::read_to_string(&file)?;
     let content_html = render::render(&markdown);
@@ -66,6 +73,8 @@ pub async fn start(file: PathBuf, listener: TcpListener) -> anyhow::Result<()> {
         base_dir,
         current_html: RwLock::new(content_html),
         tx: tx.clone(),
+        connections: AtomicUsize::new(0),
+        all_disconnected: Notify::new(),
     });
 
     let state_for_task = Arc::clone(&state);
@@ -78,19 +87,64 @@ pub async fn start(file: PathBuf, listener: TcpListener) -> anyhow::Result<()> {
 
     let _debouncer = watcher::watch(file, tx)?;
 
-    let app = router(page, state);
+    let app = router(page, state.clone());
     axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown_signal())
+        .with_graceful_shutdown(shutdown_signal(state))
         .await?;
 
     Ok(())
 }
 
-async fn shutdown_signal() {
-    tokio::signal::ctrl_c()
-        .await
-        .expect("failed to listen for ctrl-c");
-    eprintln!("\nsheen: shutting down...");
+async fn shutdown_signal(state: Arc<AppState>) {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to listen for ctrl-c");
+        eprintln!("\nsheen: shutting down...");
+    };
+
+    let auto_shutdown = async {
+        // Wait for at least one connection before monitoring disconnects
+        loop {
+            state.all_disconnected.notified().await;
+
+            if state.connections.load(Ordering::Relaxed) == 0 {
+                break;
+            }
+        }
+
+        // Grace period — allow reconnects (page refresh, etc.)
+        tokio::time::sleep(SHUTDOWN_GRACE_PERIOD).await;
+
+        if state.connections.load(Ordering::Relaxed) == 0 {
+            eprintln!("sheen: all tabs closed, shutting down...");
+        } else {
+            // Reconnected during grace period, keep waiting
+            Box::pin(auto_shutdown_loop(state)).await;
+        }
+    };
+
+    tokio::select! {
+        () = ctrl_c => {},
+        () = auto_shutdown => {},
+    }
+}
+
+async fn auto_shutdown_loop(state: Arc<AppState>) {
+    loop {
+        state.all_disconnected.notified().await;
+
+        if state.connections.load(Ordering::Relaxed) > 0 {
+            continue;
+        }
+
+        tokio::time::sleep(SHUTDOWN_GRACE_PERIOD).await;
+
+        if state.connections.load(Ordering::Relaxed) == 0 {
+            eprintln!("sheen: all tabs closed, shutting down...");
+            return;
+        }
+    }
 }
 
 fn router(page: String, state: Arc<AppState>) -> Router {
@@ -136,8 +190,12 @@ async fn ws_handler(ws: WebSocketUpgrade, State(state): State<Arc<AppState>>) ->
 }
 
 async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
+    state.connections.fetch_add(1, Ordering::Relaxed);
+
     let current = state.current_html.read().await.clone();
     if socket.send(Message::Text(current.into())).await.is_err() {
+        state.connections.fetch_sub(1, Ordering::Relaxed);
+        state.all_disconnected.notify_one();
         return;
     }
 
@@ -148,6 +206,9 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
             break;
         }
     }
+
+    state.connections.fetch_sub(1, Ordering::Relaxed);
+    state.all_disconnected.notify_one();
 }
 
 #[cfg(test)]
@@ -165,6 +226,8 @@ mod tests {
             base_dir: PathBuf::from("."),
             current_html: RwLock::new("<p>hello</p>".to_string()),
             tx,
+            connections: AtomicUsize::new(0),
+            all_disconnected: Notify::new(),
         });
         router(page, state)
     }
@@ -221,6 +284,8 @@ mod tests {
             base_dir,
             current_html: RwLock::new("<p>hello</p>".to_string()),
             tx,
+            connections: AtomicUsize::new(0),
+            all_disconnected: Notify::new(),
         });
         router(page, state)
     }
