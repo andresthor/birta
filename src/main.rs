@@ -19,16 +19,31 @@ struct Cli {
     /// Don't open the browser automatically
     #[arg(long)]
     no_open: bool,
+
+    /// Custom CSS file to inject after default styles
+    #[arg(long)]
+    css: Option<PathBuf>,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
+    let custom_css = match &cli.css {
+        Some(path) => {
+            if !path.exists() {
+                anyhow::bail!("CSS file not found: {}", path.display());
+            }
+            Some(std::fs::read_to_string(path)?)
+        }
+        None => None,
+    };
+
     if cli.file.as_os_str() == "-" {
         let mut markdown = String::new();
         std::io::stdin().read_to_string(&mut markdown)?;
-        return sheen::server::run_stdin(&markdown, cli.port, cli.no_open).await;
+        return sheen::server::run_stdin(&markdown, cli.port, cli.no_open, custom_css.as_deref())
+            .await;
     }
 
     if !cli.file.exists() {
@@ -44,5 +59,5 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
-    sheen::server::run(cli.file, cli.port, cli.no_open).await
+    sheen::server::run(cli.file, cli.port, cli.no_open, custom_css.as_deref()).await
 }

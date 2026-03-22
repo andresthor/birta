@@ -25,7 +25,7 @@ struct AppState {
     all_disconnected: Notify,
 }
 
-pub async fn run(file: PathBuf, port: u16, no_open: bool) -> anyhow::Result<()> {
+pub async fn run(file: PathBuf, port: u16, no_open: bool, custom_css: Option<&str>) -> anyhow::Result<()> {
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = TcpListener::bind(addr).await?;
     let actual_addr = listener.local_addr()?;
@@ -44,11 +44,11 @@ pub async fn run(file: PathBuf, port: u16, no_open: bool) -> anyhow::Result<()> 
         }
     }
 
-    start(file, listener).await
+    start(file, listener, custom_css).await
 }
 
 /// Serve markdown read from stdin (no file watching).
-pub async fn run_stdin(markdown: &str, port: u16, no_open: bool) -> anyhow::Result<()> {
+pub async fn run_stdin(markdown: &str, port: u16, no_open: bool, custom_css: Option<&str>) -> anyhow::Result<()> {
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = TcpListener::bind(addr).await?;
     let actual_addr = listener.local_addr()?;
@@ -63,7 +63,7 @@ pub async fn run_stdin(markdown: &str, port: u16, no_open: bool) -> anyhow::Resu
     }
 
     let content_html = render::render(markdown);
-    let page = template::render_page("stdin", &content_html);
+    let page = template::render_page("stdin", &content_html, custom_css);
     let base_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
 
     let (tx, _rx) = broadcast::channel::<String>(16);
@@ -88,7 +88,7 @@ pub async fn run_stdin(markdown: &str, port: u16, no_open: bool) -> anyhow::Resu
 ///
 /// Watches the file for changes and pushes updates over WebSocket.
 /// Shuts down automatically when the last browser tab disconnects.
-pub async fn start(file: PathBuf, listener: TcpListener) -> anyhow::Result<()> {
+pub async fn start(file: PathBuf, listener: TcpListener, custom_css: Option<&str>) -> anyhow::Result<()> {
     let markdown = std::fs::read_to_string(&file)?;
     let content_html = render::render(&markdown);
 
@@ -97,7 +97,7 @@ pub async fn start(file: PathBuf, listener: TcpListener) -> anyhow::Result<()> {
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_else(|| "untitled".to_string());
 
-    let page = template::render_page(&filename, &content_html);
+    let page = template::render_page(&filename, &content_html, custom_css);
 
     let base_dir = file
         .parent()
@@ -272,7 +272,7 @@ mod tests {
     use super::*;
 
     fn test_router() -> Router {
-        let page = template::render_page("test.md", "<p>hello</p>");
+        let page = template::render_page("test.md", "<p>hello</p>", None);
         let (tx, _rx) = broadcast::channel(16);
         let state = Arc::new(AppState {
             base_dir: PathBuf::from("."),
@@ -330,7 +330,7 @@ mod tests {
     }
 
     fn test_router_with_base_dir(base_dir: PathBuf) -> Router {
-        let page = template::render_page("test.md", "<p>hello</p>");
+        let page = template::render_page("test.md", "<p>hello</p>", None);
         let (tx, _rx) = broadcast::channel(16);
         let state = Arc::new(AppState {
             base_dir,

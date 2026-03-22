@@ -5,13 +5,19 @@ const PAGE_CSS: &str = include_str!("../assets/page.css");
 const SYNTAX_CSS: &str = include_str!("../assets/syntax.css");
 const ALERTS_CSS: &str = include_str!("../assets/alerts.css");
 
-pub fn render_page(filename: &str, content_html: &str) -> String {
+pub fn render_page(filename: &str, content_html: &str, custom_css: Option<&str>) -> String {
+    let custom_style = match custom_css {
+        Some(css) => format!("<style>{css}</style>"),
+        None => String::new(),
+    };
+
     VIEWER_HTML
         .replace("{{GITHUB_CSS}}", GITHUB_CSS)
         .replace("{{THEME_OVERRIDES}}", THEME_OVERRIDES)
         .replace("{{PAGE_CSS}}", PAGE_CSS)
         .replace("{{SYNTAX_CSS}}", SYNTAX_CSS)
         .replace("{{ALERTS_CSS}}", ALERTS_CSS)
+        .replace("{{CUSTOM_CSS}}", &custom_style)
         .replace("{{FILENAME}}", filename)
         .replace("{{CONTENT}}", content_html)
 }
@@ -22,7 +28,7 @@ mod tests {
 
     #[test]
     fn render_page_contains_filename() {
-        let page = render_page("test.md", "<p>hello</p>");
+        let page = render_page("test.md", "<p>hello</p>", None);
         assert!(
             page.contains("test.md"),
             "rendered page should contain the filename"
@@ -31,7 +37,7 @@ mod tests {
 
     #[test]
     fn render_page_contains_content() {
-        let page = render_page("test.md", "<p>hello</p>");
+        let page = render_page("test.md", "<p>hello</p>", None);
         assert!(
             page.contains("<p>hello</p>"),
             "rendered page should contain the content HTML"
@@ -40,7 +46,7 @@ mod tests {
 
     #[test]
     fn render_page_contains_markdown_body_class() {
-        let page = render_page("test.md", "");
+        let page = render_page("test.md", "", None);
         assert!(
             page.contains("markdown-body"),
             "rendered page should contain the markdown-body class"
@@ -49,10 +55,19 @@ mod tests {
 
     #[test]
     fn render_page_contains_github_css() {
-        let page = render_page("test.md", "");
+        let page = render_page("test.md", "", None);
         assert!(
             page.contains(".markdown-body"),
             "rendered page should contain github-markdown-css rules"
+        );
+    }
+
+    #[test]
+    fn render_page_includes_custom_css() {
+        let page = render_page("test.md", "", Some("body { color: red; }"));
+        assert!(
+            page.contains("body { color: red; }"),
+            "rendered page should contain the custom CSS"
         );
     }
 }

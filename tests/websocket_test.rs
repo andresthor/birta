@@ -13,7 +13,7 @@ async fn start_server(tmpfile: &NamedTempFile) -> u16 {
     let port = listener.local_addr().unwrap().port();
 
     tokio::spawn(async move {
-        sheen::server::start(path, listener).await.unwrap();
+        sheen::server::start(path, listener, None).await.unwrap();
     });
 
     // Wait for server to be ready
