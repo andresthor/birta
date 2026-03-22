@@ -31,6 +31,8 @@ fn options() -> Options<'static> {
     options.extension.shortcodes = true;
     options.extension.header_ids = Some(String::new());
     options.extension.alerts = true;
+    options.extension.math_dollars = true;
+    options.extension.math_code = true;
 
     // Rewrite relative image paths to go through /local/
     options.extension.image_url_rewriter = Some(Arc::new(|url: &str| {

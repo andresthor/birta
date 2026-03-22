@@ -1,0 +1,15 @@
+---
+source: tests/render_test.rs
+expression: html
+input_file: tests/fixtures/math.md
+---
+<p>Inline math: <span data-math-style="inline">E = mc^2</span></p>
+<p>Display math:</p>
+<p><span data-math-style="display">
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+</span></p>
+<p>Code-style inline: <code data-math-style="inline">\alpha + \beta</code></p>
+<p>Code-style display:</p>
+<pre lang="math" data-math-style="display"><code>\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+</code></pre>
+<p>Mixed: The equation <span data-math-style="inline">a^2 + b^2 = c^2</span> is well known.</p>

@@ -10,6 +10,8 @@
   <style>{{SYNTAX_CSS}}</style>
   <style>{{ALERTS_CSS}}</style>
   {{CUSTOM_CSS}}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
   <header class="header">
@@ -69,6 +71,30 @@
       });
     })();
 
+    // Math rendering via KaTeX
+    // comrak emits: <span data-math-style="...">, <code data-math-style="...">,
+    // and <pre data-math-style="display"><code>...</code></pre>
+    function renderMath() {
+      if (typeof katex === 'undefined') return;
+      document.querySelectorAll('[data-math-style]').forEach(function(el) {
+        if (el.hasAttribute('data-math-rendered')) return;
+        var displayMode = el.getAttribute('data-math-style') === 'display';
+        var tex = el.textContent;
+        try {
+          katex.render(tex, el, { displayMode: displayMode, throwOnError: false });
+          el.setAttribute('data-math-rendered', '');
+        } catch (e) { /* leave raw text on error */ }
+      });
+    }
+
+    // Render math on initial load (KaTeX script is defer, so wait for it)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderMath);
+    } else {
+      // defer script may not have executed yet
+      setTimeout(renderMath, 0);
+    }
+
     // WebSocket live reload
     (function() {
       var content = document.getElementById('content');
@@ -96,6 +122,7 @@
 
         ws.onmessage = function(event) {
           content.innerHTML = event.data;
+          renderMath();
         };
 
         ws.onclose = function() {
