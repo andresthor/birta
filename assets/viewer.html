@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{FILENAME}} — sheen</title>
+  <style>{{GITHUB_CSS}}</style>
+  <style>{{PAGE_CSS}}</style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
+      </svg>
+      <span class="filename" id="filename">{{FILENAME}}</span>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+      <span id="theme-icon">☀️</span>
+    </button>
+  </header>
+
+  <main class="container">
+    <article class="markdown-body" id="content">{{CONTENT}}</article>
+  </main>
+
+  <div class="status" id="status"></div>
+
+  <script>
+    // Theme handling
+    (function() {
+      var html = document.documentElement;
+      var btn = document.getElementById('theme-toggle');
+      var icon = document.getElementById('theme-icon');
+      var stored = localStorage.getItem('sheen-theme');
+
+      function applyTheme(theme) {
+        if (theme === 'dark' || theme === 'light') {
+          html.setAttribute('data-theme', theme);
+        } else {
+          html.removeAttribute('data-theme');
+        }
+        icon.textContent = getEffectiveTheme() === 'dark' ? '☀️' : '🌙';
+      }
+
+      function getEffectiveTheme() {
+        var explicit = html.getAttribute('data-theme');
+        if (explicit) return explicit;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      applyTheme(stored);
+
+      btn.addEventListener('click', function() {
+        var next = getEffectiveTheme() === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('sheen-theme', next);
+        applyTheme(next);
+      });
+
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+        if (!localStorage.getItem('sheen-theme')) applyTheme(null);
+      });
+    })();
+
+    // WebSocket live reload
+    (function() {
+      var content = document.getElementById('content');
+      var status = document.getElementById('status');
+      var reconnectDelay = 1000;
+      var maxDelay = 10000;
+
+      function showStatus(msg) {
+        status.textContent = msg;
+        status.classList.add('visible');
+      }
+
+      function hideStatus() {
+        status.classList.remove('visible');
+      }
+
+      function connect() {
+        var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        var ws = new WebSocket(proto + '//' + location.host + '/ws');
+
+        ws.onopen = function() {
+          reconnectDelay = 1000;
+          hideStatus();
+        };
+
+        ws.onmessage = function(event) {
+          content.innerHTML = event.data;
+        };
+
+        ws.onclose = function() {
+          showStatus('Disconnected — reconnecting…');
+          setTimeout(function() {
+            reconnectDelay = Math.min(reconnectDelay * 2, maxDelay);
+            connect();
+          }, reconnectDelay);
+        };
+      }
+
+      connect();
+    })();
+  </script>
+</body>
+</html>

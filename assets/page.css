@@ -1,0 +1,121 @@
+:root {
+  --color-fg: #1f2328;
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f6f8fa;
+  --color-border: #d1d9e0;
+  --color-header-bg: #f6f8fa;
+  --color-header-fg: #1f2328;
+}
+
+[data-theme="dark"] {
+  --color-fg: #e6edf3;
+  --color-bg: #0d1117;
+  --color-bg-secondary: #161b22;
+  --color-border: #30363d;
+  --color-header-bg: #161b22;
+  --color-header-fg: #e6edf3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-fg: #e6edf3;
+    --color-bg: #0d1117;
+    --color-bg-secondary: #161b22;
+    --color-border: #30363d;
+    --color-header-bg: #161b22;
+    --color-header-fg: #e6edf3;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  background-color: var(--color-header-bg);
+  border-bottom: 1px solid var(--color-border);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: var(--color-header-fg);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filename {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--color-header-fg);
+  font-size: 14px;
+  line-height: 1;
+  transition: border-color 0.2s;
+}
+
+.theme-toggle:hover {
+  border-color: var(--color-fg);
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px 45px;
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding: 16px;
+  }
+
+  .header {
+    padding: 8px 16px;
+  }
+}
+
+.status {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-header-fg);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.status.visible {
+  opacity: 1;
+}
