@@ -47,6 +47,12 @@ pub fn render_page(
         format!("<style>{}</style>", theme.body_css)
     };
 
+    let theme_attr = if has_custom_theme {
+        format!("data-sheen-theme=\"{}\"", theme.name)
+    } else {
+        String::new()
+    };
+
     let theme_mode = if theme.toggle {
         "toggle"
     } else if theme.is_light {
@@ -67,6 +73,7 @@ pub fn render_page(
         .replace("{{THEME_MODE}}", theme_mode)
         .replace("{{FILENAME}}", filename)
         .replace("{{CONTENT}}", content_html)
+        .replace("{{THEME_ATTR}}", &theme_attr)
 }
 
 #[cfg(test)]
