@@ -11,7 +11,7 @@ async fn watcher_broadcasts_on_file_change() {
     std::fs::write(&path, "# Hello").unwrap();
 
     let (tx, mut rx) = broadcast::channel::<String>(16);
-    let _debouncer = sheen::watcher::watch(path.clone(), tx).unwrap();
+    let _debouncer = sheen::watcher::watch(path.clone(), tx, None).unwrap();
 
     // Give the watcher time to settle and drain any initial events
     tokio::time::sleep(Duration::from_millis(500)).await;

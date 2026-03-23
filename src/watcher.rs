@@ -4,10 +4,12 @@ use notify_debouncer_mini::{DebouncedEventKind, new_debouncer};
 use tokio::sync::broadcast;
 
 use crate::render;
+use crate::theme::SyntaxTheme;
 
 pub fn watch(
     path: PathBuf,
     tx: broadcast::Sender<String>,
+    syntax_theme: Option<SyntaxTheme>,
 ) -> anyhow::Result<notify_debouncer_mini::Debouncer<notify::RecommendedWatcher>> {
     let canonical = path.canonicalize()?;
     let watch_dir = canonical.parent().map(|p| p.to_path_buf());
@@ -43,7 +45,7 @@ pub fn watch(
                 }
             };
 
-            let html = render::render(&markdown);
+            let html = render::render(&markdown, syntax_theme.as_ref());
             // Ignore send errors (no active receivers)
             let _ = tx.send(html);
         },

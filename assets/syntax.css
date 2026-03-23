@@ -54,6 +54,12 @@ pre.syntax-highlighting {
 /* Attributes */
 .entity.other.attribute-name { color: #0550ae; }
 
+/* Diff */
+.markup.inserted, .markup.inserted.diff { color: #116329; background-color: #dafbe1; }
+.markup.deleted, .markup.deleted.diff { color: #82071e; background-color: #ffebe9; }
+.punctuation.definition.inserted.diff { color: #116329; }
+.punctuation.definition.deleted.diff { color: #82071e; }
+
 /* Embedded/special */
 .variable.other { color: #0550ae; }
 
@@ -131,6 +137,17 @@ pre.syntax-highlighting {
   color: #79c0ff;
 }
 
+[data-theme="dark"] .markup.inserted,
+[data-theme="dark"] .markup.inserted.diff {
+  color: #aff5b4; background-color: #033a16;
+}
+[data-theme="dark"] .markup.deleted,
+[data-theme="dark"] .markup.deleted.diff {
+  color: #ffdcd7; background-color: #67060c;
+}
+[data-theme="dark"] .punctuation.definition.inserted.diff { color: #aff5b4; }
+[data-theme="dark"] .punctuation.definition.deleted.diff { color: #ffdcd7; }
+
 /* System preference dark mode (no explicit data-theme) */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) pre.syntax-highlighting {
@@ -159,4 +176,10 @@ pre.syntax-highlighting {
   :root:not([data-theme="light"]) .support.function { color: #d2a8ff; }
   :root:not([data-theme="light"]) .entity.other.attribute-name { color: #79c0ff; }
   :root:not([data-theme="light"]) .variable.other { color: #79c0ff; }
+  :root:not([data-theme="light"]) .markup.inserted,
+  :root:not([data-theme="light"]) .markup.inserted.diff { color: #aff5b4; background-color: #033a16; }
+  :root:not([data-theme="light"]) .markup.deleted,
+  :root:not([data-theme="light"]) .markup.deleted.diff { color: #ffdcd7; background-color: #67060c; }
+  :root:not([data-theme="light"]) .punctuation.definition.inserted.diff { color: #aff5b4; }
+  :root:not([data-theme="light"]) .punctuation.definition.deleted.diff { color: #ffdcd7; }
 }

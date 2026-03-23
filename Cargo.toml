@@ -9,10 +9,14 @@ anyhow = "1"
 axum = { version = "0.8", features = ["ws"] }
 clap = { version = "4", features = ["derive"] }
 comrak = { version = "0.51", default-features = false, features = ["shortcodes", "syntect"] }
+dirs = "6"
 notify = "8"
 notify-debouncer-mini = "0.6"
 open = "5"
+serde = { version = "1", features = ["derive"] }
+syntect = { version = "5", default-features = false, features = ["plist-load"] }
 tokio = { version = "1.50.0", features = ["full"] }
+toml = "0.8"
 
 [dev-dependencies]
 assert_cmd = "2"

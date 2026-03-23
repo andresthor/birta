@@ -8,7 +8,9 @@
   <style>{{THEME_OVERRIDES}}</style>
   <style>{{PAGE_CSS}}</style>
   <style>{{SYNTAX_CSS}}</style>
+  <style>{{ALERTS_COLORS_CSS}}</style>
   <style>{{ALERTS_CSS}}</style>
+  {{THEME_BODY_CSS}}
   {{CUSTOM_CSS}}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" crossorigin="anonymous">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" crossorigin="anonymous"></script>
@@ -35,12 +37,22 @@
 
   <script>
     // Theme handling
+    var THEME_MODE = '{{THEME_MODE}}';
     (function() {
       var html = document.documentElement;
       var mdBody = document.getElementById('content');
       var btn = document.getElementById('theme-toggle');
       var icon = document.getElementById('theme-icon');
       var stored = localStorage.getItem('sheen-theme');
+
+      // Fixed themes (presets) hide the toggle and force a data-theme
+      if (THEME_MODE.indexOf('fixed') === 0) {
+        btn.style.display = 'none';
+        var fixedMode = THEME_MODE === 'fixed-light' ? 'light' : 'dark';
+        html.setAttribute('data-theme', fixedMode);
+        mdBody.setAttribute('data-theme', fixedMode);
+        return;
+      }
 
       function applyTheme(theme) {
         if (theme === 'dark' || theme === 'light') {

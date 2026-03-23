@@ -5,10 +5,14 @@ use comrak::plugins::syntect::SyntectAdapter;
 use comrak::{Arena, Options, format_html_with_plugins, options, parse_document};
 
 use crate::highlight;
+use crate::theme::SyntaxTheme;
 
-pub fn render(markdown: &str) -> String {
+pub fn render(markdown: &str, syntax_theme: Option<&SyntaxTheme>) -> String {
     let options = options();
-    let adapter = highlight::adapter();
+    let adapter = match syntax_theme {
+        Some(st) => highlight::adapter_with_theme(st),
+        None => highlight::adapter(),
+    };
     let plugins = plugins(&adapter);
 
     let arena = Arena::new();

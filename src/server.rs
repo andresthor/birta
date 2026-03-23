@@ -13,6 +13,7 @@ use axum::routing::{get, post};
 use tokio::net::TcpListener;
 use tokio::sync::{Notify, RwLock, broadcast};
 
+use crate::theme::ResolvedTheme;
 use crate::{render, template, watcher};
 
 const SHUTDOWN_GRACE_PERIOD: Duration = Duration::from_secs(5);
@@ -32,6 +33,7 @@ pub async fn run(
     port: u16,
     no_open: bool,
     custom_css: Option<&str>,
+    theme: &ResolvedTheme,
 ) -> anyhow::Result<()> {
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = TcpListener::bind(addr).await?;
@@ -51,7 +53,7 @@ pub async fn run(
         }
     }
 
-    start(file, listener, custom_css).await
+    start(file, listener, custom_css, theme).await
 }
 
 /// Serve markdown read from stdin (no file watching).
@@ -60,6 +62,7 @@ pub async fn run_stdin(
     port: u16,
     no_open: bool,
     custom_css: Option<&str>,
+    theme: &ResolvedTheme,
 ) -> anyhow::Result<()> {
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = TcpListener::bind(addr).await?;
@@ -74,8 +77,8 @@ pub async fn run_stdin(
         }
     }
 
-    let content_html = render::render(markdown);
-    let page = template::render_page("stdin", &content_html, custom_css);
+    let content_html = render::render(markdown, theme.syntax.as_ref());
+    let page = template::render_page("stdin", &content_html, custom_css, theme);
     let base_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
 
     let (tx, _rx) = broadcast::channel::<String>(16);
@@ -107,16 +110,17 @@ pub async fn start(
     file: PathBuf,
     listener: TcpListener,
     custom_css: Option<&str>,
+    theme: &ResolvedTheme,
 ) -> anyhow::Result<()> {
     let markdown = std::fs::read_to_string(&file)?;
-    let content_html = render::render(&markdown);
+    let content_html = render::render(&markdown, theme.syntax.as_ref());
 
     let filename = file
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_else(|| "untitled".to_string());
 
-    let page = template::render_page(&filename, &content_html, custom_css);
+    let page = template::render_page(&filename, &content_html, custom_css, theme);
 
     let base_dir = file
         .parent()
@@ -144,7 +148,8 @@ pub async fn start(
         }
     });
 
-    let _debouncer = watcher::watch(file, tx)?;
+    let syntax_theme_for_watcher = theme.syntax.clone();
+    let _debouncer = watcher::watch(file, tx, syntax_theme_for_watcher)?;
 
     let app = router(page, state.clone());
     axum::serve(listener, app)
@@ -368,9 +373,21 @@ mod tests {
     use tower::ServiceExt;
 
     use super::*;
+    use crate::theme;
+
+    fn default_theme() -> theme::ResolvedTheme {
+        theme::ResolvedTheme {
+            name: "github".to_string(),
+            syntax: None,
+            body_css: String::new(),
+            toggle: true,
+            is_light: false,
+        }
+    }
 
     fn test_router() -> Router {
-        let page = template::render_page("test.md", "<p>hello</p>", None);
+        let theme = default_theme();
+        let page = template::render_page("test.md", "<p>hello</p>", None, &theme);
         let (tx, _rx) = broadcast::channel(16);
         let (scroll_tx, _) = broadcast::channel(16);
         let state = Arc::new(AppState {
@@ -431,7 +448,8 @@ mod tests {
     }
 
     fn test_router_with_base_dir(base_dir: PathBuf) -> Router {
-        let page = template::render_page("test.md", "<p>hello</p>", None);
+        let theme = default_theme();
+        let page = template::render_page("test.md", "<p>hello</p>", None, &theme);
         let (tx, _rx) = broadcast::channel(16);
         let (scroll_tx, _) = broadcast::channel(16);
         let state = Arc::new(AppState {

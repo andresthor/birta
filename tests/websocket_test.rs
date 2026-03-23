@@ -13,7 +13,16 @@ async fn start_server(tmpfile: &NamedTempFile) -> u16 {
     let port = listener.local_addr().unwrap().port();
 
     tokio::spawn(async move {
-        sheen::server::start(path, listener, None).await.unwrap();
+        let theme = sheen::theme::ResolvedTheme {
+            name: "github".to_string(),
+            syntax: None,
+            body_css: String::new(),
+            toggle: true,
+            is_light: false,
+        };
+        sheen::server::start(path, listener, None, &theme)
+            .await
+            .unwrap();
     });
 
     // Wait for server to be ready
