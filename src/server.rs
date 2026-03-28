@@ -62,12 +62,12 @@ pub async fn run(file: PathBuf, opts: ServerOptions) -> anyhow::Result<()> {
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_else(|| "untitled".to_string());
 
-    eprintln!("sheen: serving {filename} at http://{actual_addr}");
+    eprintln!("birta: serving {filename} at http://{actual_addr}");
 
     if !opts.no_open {
         let url = format!("http://{actual_addr}");
         if let Err(e) = open::that(&url) {
-            eprintln!("sheen: could not open browser: {e}");
+            eprintln!("birta: could not open browser: {e}");
         }
     }
 
@@ -80,12 +80,12 @@ pub async fn run_stdin(markdown: &str, opts: ServerOptions) -> anyhow::Result<()
     let listener = TcpListener::bind(addr).await?;
     let actual_addr = listener.local_addr()?;
 
-    eprintln!("sheen: serving stdin at http://{actual_addr}");
+    eprintln!("birta: serving stdin at http://{actual_addr}");
 
     if !opts.no_open {
         let url = format!("http://{actual_addr}");
         if let Err(e) = open::that(&url) {
-            eprintln!("sheen: could not open browser: {e}");
+            eprintln!("birta: could not open browser: {e}");
         }
     }
 
@@ -128,7 +128,11 @@ pub async fn run_stdin(markdown: &str, opts: ServerOptions) -> anyhow::Result<()
 }
 
 /// Start serving a markdown file on the given listener.
-pub async fn start(file: PathBuf, listener: TcpListener, opts: ServerOptions) -> anyhow::Result<()> {
+pub async fn start(
+    file: PathBuf,
+    listener: TcpListener,
+    opts: ServerOptions,
+) -> anyhow::Result<()> {
     let markdown = std::fs::read_to_string(&file)?;
     let content_html = render::render(&markdown, opts.theme.active_data().syntax.as_ref());
 
@@ -193,7 +197,7 @@ async fn shutdown_signal(state: Arc<AppState>) {
         tokio::signal::ctrl_c()
             .await
             .expect("failed to listen for ctrl-c");
-        eprintln!("\nsheen: shutting down...");
+        eprintln!("\nbirta: shutting down...");
     };
 
     let auto_shutdown = async {
@@ -208,7 +212,7 @@ async fn shutdown_signal(state: Arc<AppState>) {
         tokio::time::sleep(SHUTDOWN_GRACE_PERIOD).await;
 
         if state.connections.load(Ordering::Relaxed) == 0 {
-            eprintln!("sheen: all tabs closed, shutting down...");
+            eprintln!("birta: all tabs closed, shutting down...");
         } else {
             Box::pin(auto_shutdown_loop(state)).await;
         }
@@ -231,7 +235,7 @@ async fn auto_shutdown_loop(state: Arc<AppState>) {
         tokio::time::sleep(SHUTDOWN_GRACE_PERIOD).await;
 
         if state.connections.load(Ordering::Relaxed) == 0 {
-            eprintln!("sheen: all tabs closed, shutting down...");
+            eprintln!("birta: all tabs closed, shutting down...");
             return;
         }
     }
@@ -286,7 +290,7 @@ async fn handle_ws_message(text: &str, state: &AppState) {
                 .and_then(|c| c.as_bool())
                 .unwrap_or(false);
             if let Err(e) = toggle_checkbox(state, line, checked) {
-                eprintln!("sheen: checkbox toggle failed: {e}");
+                eprintln!("birta: checkbox toggle failed: {e}");
             }
         }
         Some("theme_change") => {
@@ -316,7 +320,7 @@ async fn broadcast_theme_update(state: &AppState) {
         match std::fs::read_to_string(source_file) {
             Ok(markdown) => render::render(&markdown, active.syntax.as_ref()),
             Err(e) => {
-                eprintln!("sheen: failed to re-read file for theme change: {e}");
+                eprintln!("birta: failed to re-read file for theme change: {e}");
                 return;
             }
         }
@@ -353,7 +357,7 @@ async fn broadcast_theme_update(state: &AppState) {
 async fn handle_theme_change(state: &AppState, theme_name: &str) {
     let mut registry = state.registry.write().await;
     if let Err(e) = registry.set_active(theme_name) {
-        eprintln!("sheen: theme change failed: {e}");
+        eprintln!("birta: theme change failed: {e}");
         return;
     }
     drop(registry);

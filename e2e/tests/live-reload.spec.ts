@@ -24,7 +24,7 @@ test("live-reloads on file change", async ({ page }) => {
   const originalContent = fs.readFileSync(testFixture, "utf-8");
 
   await page.goto("/");
-  await expect(page.locator("h1").first()).toHaveText("Sheen Test Document");
+  await expect(page.locator("h1").first()).toHaveText("Birta Test Document");
 
   // Modify the file
   fs.writeFileSync(
@@ -46,7 +46,7 @@ test("live-reloads on file change", async ({ page }) => {
   fs.writeFileSync(testFixture, originalContent);
 
   // Verify it reverts
-  await expect(page.locator("h1").first()).toHaveText("Sheen Test Document", {
+  await expect(page.locator("h1").first()).toHaveText("Birta Test Document", {
     timeout: 5000,
   });
 });

@@ -65,48 +65,48 @@
 
 /*
  * Alert color overrides using theme CSS variables.
- * Scoped to [data-sheen-theme] so they apply when any custom theme is active.
- * GitHub (no data-sheen-theme) uses the vendored github-markdown.css alert rules.
+ * Scoped to [data-birta-theme] so they apply when any custom theme is active.
+ * GitHub (no data-birta-theme) uses the vendored github-markdown.css alert rules.
  *
  * Backgrounds use --alert-*-bg variables set by themes. If a theme doesn't
  * set them, backgrounds default to transparent.
  */
-[data-sheen-theme] .markdown-body .markdown-alert.markdown-alert-note {
+[data-birta-theme] .markdown-body .markdown-alert.markdown-alert-note {
   border-left-color: var(--alert-note);
   background-color: var(--alert-note-bg, transparent);
 }
-[data-sheen-theme] .markdown-body .markdown-alert.markdown-alert-note .markdown-alert-title {
+[data-birta-theme] .markdown-body .markdown-alert.markdown-alert-note .markdown-alert-title {
   color: var(--alert-note);
 }
 
-[data-sheen-theme] .markdown-body .markdown-alert.markdown-alert-tip {
+[data-birta-theme] .markdown-body .markdown-alert.markdown-alert-tip {
   border-left-color: var(--alert-tip);
   background-color: var(--alert-tip-bg, transparent);
 }
-[data-sheen-theme] .markdown-body .markdown-alert.markdown-alert-tip .markdown-alert-title {
+[data-birta-theme] .markdown-body .markdown-alert.markdown-alert-tip .markdown-alert-title {
   color: var(--alert-tip);
 }
 
-[data-sheen-theme] .markdown-body .markdown-alert.markdown-alert-important {
+[data-birta-theme] .markdown-body .markdown-alert.markdown-alert-important {
   border-left-color: var(--alert-important);
   background-color: var(--alert-important-bg, transparent);
 }
-[data-sheen-theme] .markdown-body .markdown-alert.markdown-alert-important .markdown-alert-title {
+[data-birta-theme] .markdown-body .markdown-alert.markdown-alert-important .markdown-alert-title {
   color: var(--alert-important);
 }
 
-[data-sheen-theme] .markdown-body .markdown-alert.markdown-alert-warning {
+[data-birta-theme] .markdown-body .markdown-alert.markdown-alert-warning {
   border-left-color: var(--alert-warning);
   background-color: var(--alert-warning-bg, transparent);
 }
-[data-sheen-theme] .markdown-body .markdown-alert.markdown-alert-warning .markdown-alert-title {
+[data-birta-theme] .markdown-body .markdown-alert.markdown-alert-warning .markdown-alert-title {
   color: var(--alert-warning);
 }
 
-[data-sheen-theme] .markdown-body .markdown-alert.markdown-alert-caution {
+[data-birta-theme] .markdown-body .markdown-alert.markdown-alert-caution {
   border-left-color: var(--alert-caution);
   background-color: var(--alert-caution-bg, transparent);
 }
-[data-sheen-theme] .markdown-body .markdown-alert.markdown-alert-caution .markdown-alert-title {
+[data-birta-theme] .markdown-body .markdown-alert.markdown-alert-caution .markdown-alert-title {
   color: var(--alert-caution);
 }

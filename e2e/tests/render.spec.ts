@@ -2,12 +2,12 @@ import { test, expect } from "@playwright/test";
 
 test("page loads with correct title", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle("test.md — sheen");
+  await expect(page).toHaveTitle("test.md — birta");
 });
 
 test("renders h1 heading", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("h1").first()).toHaveText("Sheen Test Document");
+  await expect(page.locator("h1").first()).toHaveText("Birta Test Document");
 });
 
 test("renders table with correct headers", async ({ page }) => {
@@ -31,7 +31,7 @@ test("renders code block", async ({ page }) => {
   await page.goto("/");
   const codeBlock = page.locator("pre code");
   await expect(codeBlock.first()).toBeVisible();
-  await expect(codeBlock.first()).toContainText("Hello, sheen!");
+  await expect(codeBlock.first()).toContainText("Hello, birta!");
 });
 
 test("renders blockquote", async ({ page }) => {

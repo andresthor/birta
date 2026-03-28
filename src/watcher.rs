@@ -23,7 +23,7 @@ pub(crate) fn watch(
             let events = match events {
                 Ok(events) => events,
                 Err(e) => {
-                    eprintln!("sheen: watcher error: {e}");
+                    eprintln!("birta: watcher error: {e}");
                     return;
                 }
             };
@@ -43,7 +43,7 @@ pub(crate) fn watch(
             let markdown = match std::fs::read_to_string(&canonical) {
                 Ok(s) => s,
                 Err(e) => {
-                    eprintln!("sheen: could not read file: {e}");
+                    eprintln!("birta: could not read file: {e}");
                     return;
                 }
             };

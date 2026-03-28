@@ -22,7 +22,7 @@ Comprehensive fixture for CSS audit tests across themes.
 
 ```rust
 fn main() {
-    let message = "Hello, sheen!";
+    let message = "Hello, birta!";
     println!("{message}");
 }
 ```

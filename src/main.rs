@@ -73,19 +73,19 @@ struct Cli {
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    // Auto-install bundled themes to ~/.local/share/sheen/themes/ on first run
-    sheen::theme::ensure_bundled_themes();
+    // Auto-install bundled themes to ~/.local/share/birta/themes/ on first run
+    birta::theme::ensure_bundled_themes();
 
     if cli.list_themes {
-        let entries = sheen::theme::list_installed();
+        let entries = birta::theme::list_installed();
         if entries.is_empty() {
             eprintln!("no themes found");
         } else {
             let max_name = entries.iter().map(|e| e.name.len()).max().unwrap_or(0);
             for entry in &entries {
                 let source = match entry.source {
-                    sheen::theme::ThemeSource::User => "user",
-                    sheen::theme::ThemeSource::Bundled => "bundled",
+                    birta::theme::ThemeSource::User => "user",
+                    birta::theme::ThemeSource::Bundled => "bundled",
                 };
                 println!("  {:<width$}  ({source})", entry.name, width = max_name);
             }
@@ -97,7 +97,7 @@ async fn main() -> anyhow::Result<()> {
         .file
         .ok_or_else(|| anyhow::anyhow!("missing required argument: FILE"))?;
 
-    let config = sheen::config::load();
+    let config = birta::config::load();
 
     let port = cli.port.or(config.port).unwrap_or(0);
     let no_open = cli.no_open || config.no_open.unwrap_or(false);
@@ -114,19 +114,19 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let mut theme =
-        sheen::theme::resolve(&config, cli.theme.as_deref(), cli.syntax_theme.as_deref())?;
+        birta::theme::resolve(&config, cli.theme.as_deref(), cli.syntax_theme.as_deref())?;
 
     if cli.light {
-        theme.active_variant = sheen::theme::Variant::Light;
+        theme.active_variant = birta::theme::Variant::Light;
     } else if cli.dark {
-        theme.active_variant = sheen::theme::Variant::Dark;
+        theme.active_variant = birta::theme::Variant::Dark;
     }
 
     let enable_swap = !cli.no_theme_swap && config.theme.controls.show_controls.theme_swap;
     let enable_toggle = !cli.no_toggle && config.theme.controls.show_controls.theme_toggle;
     let show_header = !cli.no_header && config.theme.controls.show_controls.header;
 
-    let font_config = sheen::config::FontConfig {
+    let font_config = birta::config::FontConfig {
         body: cli.font_body.or(config.font.body),
         mono: cli.font_mono.or(config.font.mono),
     };
@@ -135,7 +135,7 @@ async fn main() -> anyhow::Result<()> {
     if file.as_os_str() == "-" {
         let mut markdown = String::new();
         std::io::stdin().read_to_string(&mut markdown)?;
-        let opts = sheen::server::ServerOptions {
+        let opts = birta::server::ServerOptions {
             port,
             no_open,
             custom_css,
@@ -146,7 +146,7 @@ async fn main() -> anyhow::Result<()> {
             show_header,
             reading_mode: cli.reading_mode,
         };
-        return sheen::server::run_stdin(&markdown, opts).await;
+        return birta::server::run_stdin(&markdown, opts).await;
     }
 
     if !file.exists() {
@@ -156,13 +156,13 @@ async fn main() -> anyhow::Result<()> {
     if let Some(ext) = file.extension().and_then(|e| e.to_str()) {
         if ext != "md" && ext != "markdown" {
             eprintln!(
-                "sheen: warning: {} does not have a .md or .markdown extension",
+                "birta: warning: {} does not have a .md or .markdown extension",
                 file.display()
             );
         }
     }
 
-    let opts = sheen::server::ServerOptions {
+    let opts = birta::server::ServerOptions {
         port,
         no_open,
         custom_css,
@@ -173,5 +173,5 @@ async fn main() -> anyhow::Result<()> {
         show_header,
         reading_mode: cli.reading_mode,
     };
-    sheen::server::run(file, opts).await
+    birta::server::run(file, opts).await
 }

@@ -28,7 +28,7 @@ async function getStyle(
   );
 }
 
-async function startSheen(
+async function startBirta(
   port: number,
   fixture: string,
   extraArgs: string[] = []
@@ -56,10 +56,10 @@ async function startSheen(
     await new Promise((r) => setTimeout(r, 500));
   }
   proc.kill();
-  throw new Error(`Sheen did not start on port ${port} within 120s`);
+  throw new Error(`Birta did not start on port ${port} within 120s`);
 }
 
-function stopSheen(proc: ChildProcess): void {
+function stopBirta(proc: ChildProcess): void {
   proc.kill("SIGTERM");
 }
 
@@ -70,11 +70,11 @@ test.describe.serial("css audit: github dark", () => {
   const BASE = "http://127.0.0.1:3457";
 
   test.beforeAll(async () => {
-    server = await startSheen(3457, "fixtures/theme-test.md");
+    server = await startBirta(3457, "fixtures/theme-test.md");
   });
 
   test.afterAll(() => {
-    stopSheen(server);
+    stopBirta(server);
   });
 
   async function setupDarkMode(page: import("@playwright/test").Page) {
@@ -206,14 +206,14 @@ test.describe.serial("css audit: catppuccin-mocha", () => {
   const BASE = "http://127.0.0.1:3458";
 
   test.beforeAll(async () => {
-    server = await startSheen(3458, "fixtures/theme-test.md", [
+    server = await startBirta(3458, "fixtures/theme-test.md", [
       "--theme",
       "../assets/themes/catppuccin-mocha",
     ]);
   });
 
   test.afterAll(() => {
-    stopSheen(server);
+    stopBirta(server);
   });
 
   test("page background", async ({ page }) => {
@@ -325,11 +325,11 @@ test.describe.serial("css audit: catppuccin-mocha", () => {
     expect(radius).toBe("0px");
   });
 
-  test("data-sheen-theme attribute is set", async ({ page }) => {
+  test("data-birta-theme attribute is set", async ({ page }) => {
     await page.goto(BASE);
     const attr = await page
       .locator("html")
-      .getAttribute("data-sheen-theme");
+      .getAttribute("data-birta-theme");
     expect(attr).toBe("catppuccin-mocha");
   });
 

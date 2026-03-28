@@ -1,5 +1,5 @@
 /*
- * Page-level styles for sheen viewer.
+ * Page-level styles for birta viewer.
  * Theme colors are inherited from github-markdown-css which defines
  * --bgColor-default, --fgColor-default, etc. via [data-theme] and
  * @media (prefers-color-scheme) selectors on .markdown-body.
@@ -9,25 +9,25 @@
  */
 
 :root {
-  --sheen-fg: #1f2328;
-  --sheen-bg: #ffffff;
-  --sheen-bg-secondary: #f6f8fa;
-  --sheen-border: #d1d9e0;
+  --birta-fg: #1f2328;
+  --birta-bg: #ffffff;
+  --birta-bg-secondary: #f6f8fa;
+  --birta-border: #d1d9e0;
 }
 
 [data-theme="dark"] {
-  --sheen-fg: #e6edf3;
-  --sheen-bg: #0d1117;
-  --sheen-bg-secondary: #161b22;
-  --sheen-border: #30363d;
+  --birta-fg: #e6edf3;
+  --birta-bg: #0d1117;
+  --birta-bg-secondary: #161b22;
+  --birta-border: #30363d;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --sheen-fg: #e6edf3;
-    --sheen-bg: #0d1117;
-    --sheen-bg-secondary: #161b22;
-    --sheen-border: #30363d;
+    --birta-fg: #e6edf3;
+    --birta-bg: #0d1117;
+    --birta-bg-secondary: #161b22;
+    --birta-border: #30363d;
   }
 }
 
@@ -38,8 +38,8 @@
 html, body {
   margin: 0;
   padding: 0;
-  background-color: var(--sheen-bg);
-  color: var(--sheen-fg);
+  background-color: var(--birta-bg);
+  color: var(--birta-fg);
   transition: background-color 0.2s, color 0.2s;
 }
 
@@ -51,11 +51,11 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 8px 24px;
-  background-color: var(--sheen-bg-secondary);
-  border-bottom: 1px solid var(--sheen-border);
+  background-color: var(--birta-bg-secondary);
+  border-bottom: 1px solid var(--birta-border);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
   font-size: 14px;
-  color: var(--sheen-fg);
+  color: var(--birta-fg);
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
@@ -90,12 +90,12 @@ html, body {
 }
 
 .theme-select {
-  background: var(--sheen-bg-secondary);
-  border: 1px solid var(--sheen-border);
+  background: var(--birta-bg-secondary);
+  border: 1px solid var(--birta-border);
   border-radius: 6px;
   padding: 4px 8px;
   cursor: pointer;
-  color: var(--sheen-fg);
+  color: var(--birta-fg);
   font-family: inherit;
   font-size: 13px;
   line-height: 1.4;
@@ -104,12 +104,12 @@ html, body {
 }
 
 .theme-select:hover {
-  border-color: var(--sheen-fg);
+  border-color: var(--birta-fg);
 }
 
 .theme-select option {
-  background: var(--sheen-bg);
-  color: var(--sheen-fg);
+  background: var(--birta-bg);
+  color: var(--birta-fg);
 }
 
 .reading-toggle,
@@ -118,11 +118,11 @@ html, body {
   align-items: center;
   justify-content: center;
   background: none;
-  border: 1px solid var(--sheen-border);
+  border: 1px solid var(--birta-border);
   border-radius: 6px;
   padding: 4px 8px;
   cursor: pointer;
-  color: var(--sheen-fg);
+  color: var(--birta-fg);
   font-size: 14px;
   line-height: 1;
   transition: border-color 0.2s;
@@ -130,7 +130,7 @@ html, body {
 
 .reading-toggle:hover,
 .theme-toggle:hover {
-  border-color: var(--sheen-fg);
+  border-color: var(--birta-fg);
 }
 
 .theme-toggle.disabled {
@@ -147,7 +147,7 @@ html, body {
   max-width: 1012px;
   margin: 24px auto;
   padding: 0;
-  border: 1px solid var(--sheen-border);
+  border: 1px solid var(--birta-border);
   border-radius: 6px;
 }
 
@@ -161,8 +161,8 @@ html, body {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background-color: var(--sheen-bg-secondary);
-  border-bottom: 1px solid var(--sheen-border);
+  background-color: var(--birta-bg-secondary);
+  border-bottom: 1px solid var(--birta-border);
   border-radius: 6px 6px 0 0;
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 12px;
@@ -199,9 +199,9 @@ html, body {
   border-radius: 12px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 12px;
-  background-color: var(--sheen-bg-secondary);
-  border: 1px solid var(--sheen-border);
-  color: var(--sheen-fg);
+  background-color: var(--birta-bg-secondary);
+  border: 1px solid var(--birta-border);
+  color: var(--birta-fg);
   opacity: 0;
   transition: opacity 0.3s;
   pointer-events: none;
@@ -234,7 +234,7 @@ body.reading-mode .container {
   left: 0;
   height: 3px;
   width: 0;
-  background-color: var(--sheen-fg);
+  background-color: var(--birta-fg);
   opacity: 0.25;
   z-index: 200;
   pointer-events: none;
@@ -275,16 +275,16 @@ body.reading-mode .container {
   justify-content: center;
   width: 28px;
   height: 28px;
-  background-color: var(--sheen-bg-secondary);
-  border: 1px solid var(--sheen-border);
+  background-color: var(--birta-bg-secondary);
+  border: 1px solid var(--birta-border);
   border-radius: 6px;
-  color: var(--sheen-fg);
+  color: var(--birta-fg);
   cursor: pointer;
   transition: border-color 0.2s;
 }
 
 .reading-exit-btn:hover {
-  border-color: var(--sheen-fg);
+  border-color: var(--birta-fg);
 }
 
 /* Override inline background-color from syntect on themed code blocks */
@@ -316,7 +316,7 @@ body.reading-mode .container {
   width: 16px;
   height: 16px;
   vertical-align: middle;
-  background-color: var(--sheen-fg);
+  background-color: var(--birta-fg);
   opacity: 0;
   transition: opacity 0.15s;
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a2.002 2.002 0 0 0 0 2.83Z'/%3E%3C/svg%3E");

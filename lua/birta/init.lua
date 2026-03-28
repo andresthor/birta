@@ -1,7 +1,7 @@
 local M = {}
 
 local config = {
-  cmd = "sheen",
+  cmd = "birta",
   theme = nil,
   syntax_theme = nil,
   css = nil,
@@ -42,7 +42,7 @@ end
 local function setup_scroll(buf, port)
   local timer = vim.uv.new_timer()
   local last_line = 0
-  local augroup = vim.api.nvim_create_augroup("SheenScroll" .. buf, { clear = true })
+  local augroup = vim.api.nvim_create_augroup("BirtaScroll" .. buf, { clear = true })
 
   vim.api.nvim_create_autocmd({ "CursorMoved", "CursorHold" }, {
     group = augroup,
@@ -100,13 +100,13 @@ function M.preview()
   local buf = vim.api.nvim_get_current_buf()
 
   if buffers[buf] then
-    vim.notify("sheen: already running for this buffer", vim.log.levels.WARN)
+    vim.notify("birta: already running for this buffer", vim.log.levels.WARN)
     return
   end
 
   local file = vim.api.nvim_buf_get_name(buf)
   if file == "" then
-    vim.notify("sheen: buffer has no file", vim.log.levels.ERROR)
+    vim.notify("birta: buffer has no file", vim.log.levels.ERROR)
     return
   end
 
@@ -131,7 +131,7 @@ function M.preview()
         teardown_scroll(buf)
         buffers[buf] = nil
         if code ~= 0 and code ~= 143 then
-          vim.notify("sheen: exited with code " .. code, vim.log.levels.WARN)
+          vim.notify("birta: exited with code " .. code, vim.log.levels.WARN)
         end
       end)
     end,
@@ -139,7 +139,7 @@ function M.preview()
 
   if job_id <= 0 then
     buffers[buf] = nil
-    vim.notify("sheen: failed to start (is " .. config.cmd .. " in PATH?)", vim.log.levels.ERROR)
+    vim.notify("birta: failed to start (is " .. config.cmd .. " in PATH?)", vim.log.levels.ERROR)
     return
   end
 
@@ -160,7 +160,7 @@ function M.stop(buf)
   buf = buf or vim.api.nvim_get_current_buf()
   local state = buffers[buf]
   if not state then
-    vim.notify("sheen: not running for this buffer", vim.log.levels.WARN)
+    vim.notify("birta: not running for this buffer", vim.log.levels.WARN)
     return
   end
   teardown_scroll(buf)
@@ -188,7 +188,7 @@ function M.is_running(buf)
   return buffers[buf] ~= nil
 end
 
---- Configure sheen options. Call before :SheenPreview.
+--- Configure birta options. Call before :BirtaPreview.
 ---@param opts? table
 function M.setup(opts)
   config = vim.tbl_deep_extend("force", config, opts or {})

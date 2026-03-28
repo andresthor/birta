@@ -150,9 +150,9 @@ pub struct VariantDef {
     pub bg_secondary: Option<String>,
     pub border_primary: Option<String>,
     pub border_muted: Option<String>,
-    pub fg_sheen: Option<String>,
-    pub bg_sheen: Option<String>,
-    pub border_sheen: Option<String>,
+    pub fg_birta: Option<String>,
+    pub bg_birta: Option<String>,
+    pub border_birta: Option<String>,
     pub alert_note: Option<String>,
     pub alert_tip: Option<String>,
     pub alert_important: Option<String>,
@@ -180,12 +180,12 @@ const CSS_VAR_MAP: &[(&str, &str, bool)] = &[
     ("bg_muted", "--bgColor-muted", true),
     ("bg_neutral_muted", "--bgColor-neutral-muted", true),
     ("bg_attention_muted", "--bgColor-attention-muted", true),
-    ("bg_secondary", "--sheen-bg-secondary", true),
+    ("bg_secondary", "--birta-bg-secondary", true),
     ("border_primary", "--borderColor-default", true),
     ("border_muted", "--borderColor-muted", true),
-    ("fg_sheen", "--sheen-fg", true),
-    ("bg_sheen", "--sheen-bg", true),
-    ("border_sheen", "--sheen-border", true),
+    ("fg_birta", "--birta-fg", true),
+    ("bg_birta", "--birta-bg", true),
+    ("border_birta", "--birta-border", true),
     ("alert_note", "--alert-note", true),
     ("alert_tip", "--alert-tip", true),
     ("alert_important", "--alert-important", true),
@@ -210,9 +210,9 @@ fn variant_field<'a>(variant: &'a VariantDef, field: &str) -> Option<&'a str> {
         "bg_secondary" => variant.bg_secondary.as_deref(),
         "border_primary" => variant.border_primary.as_deref(),
         "border_muted" => variant.border_muted.as_deref(),
-        "fg_sheen" => variant.fg_sheen.as_deref(),
-        "bg_sheen" => variant.bg_sheen.as_deref(),
-        "border_sheen" => variant.border_sheen.as_deref(),
+        "fg_birta" => variant.fg_birta.as_deref(),
+        "bg_birta" => variant.bg_birta.as_deref(),
+        "border_birta" => variant.border_birta.as_deref(),
         "alert_note" => variant.alert_note.as_deref(),
         "alert_tip" => variant.alert_tip.as_deref(),
         "alert_important" => variant.alert_important.as_deref(),
@@ -234,7 +234,7 @@ pub fn variant_to_css(variant: &VariantDef, theme_name: &str) -> String {
         match variant_field(variant, field) {
             Some(value) => decls.push(format!("  {css_var}: {value};")),
             None if warn => {
-                eprintln!("sheen: warning: theme '{theme_name}' missing '{field}'");
+                eprintln!("birta: warning: theme '{theme_name}' missing '{field}'");
             }
             None => {}
         }
@@ -330,28 +330,28 @@ impl ResolvedTheme {
 // Directory helpers
 // ---------------------------------------------------------------------------
 
-/// User config themes: `~/.config/sheen/themes/`
+/// User config themes: `~/.config/birta/themes/`
 fn config_themes_dir() -> Option<PathBuf> {
-    dirs::home_dir().map(|d| d.join(".config").join("sheen").join("themes"))
+    dirs::home_dir().map(|d| d.join(".config").join("birta").join("themes"))
 }
 
-/// Bundled/installed themes: `~/.local/share/sheen/themes/`
+/// Bundled/installed themes: `~/.local/share/birta/themes/`
 fn data_themes_dir() -> Option<PathBuf> {
-    dirs::home_dir().map(|d| d.join(".local").join("share").join("sheen").join("themes"))
+    dirs::home_dir().map(|d| d.join(".local").join("share").join("birta").join("themes"))
 }
 
 // ---------------------------------------------------------------------------
 // Auto-install bundled themes
 // ---------------------------------------------------------------------------
 
-/// Write bundled themes to `~/.local/share/sheen/themes/`.
+/// Write bundled themes to `~/.local/share/birta/themes/`.
 /// Always overwrites bundled files to keep them in sync with the binary.
 pub fn ensure_bundled_themes() {
     let Some(dir) = data_themes_dir() else {
         return;
     };
     if let Err(e) = write_bundled_themes(&dir) {
-        eprintln!("sheen: warning: failed to install bundled themes: {e}");
+        eprintln!("birta: warning: failed to install bundled themes: {e}");
     }
 }
 
@@ -679,7 +679,7 @@ impl ThemeRegistry {
                     self.themes.insert(entry.name, theme);
                 }
                 Err(e) => {
-                    eprintln!("sheen: warning: failed to load theme '{}': {e}", entry.name);
+                    eprintln!("birta: warning: failed to load theme '{}': {e}", entry.name);
                 }
             }
         }
@@ -778,9 +778,9 @@ mod tests {
             bg_secondary: Some("#888".to_string()),
             border_primary: Some("#999".to_string()),
             border_muted: Some("#aaa".to_string()),
-            fg_sheen: Some("#bbb".to_string()),
-            bg_sheen: Some("#ccc".to_string()),
-            border_sheen: Some("#ddd".to_string()),
+            fg_birta: Some("#bbb".to_string()),
+            bg_birta: Some("#ccc".to_string()),
+            border_birta: Some("#ddd".to_string()),
             alert_note: Some("#e01".to_string()),
             alert_tip: Some("#e02".to_string()),
             alert_important: Some("#e03".to_string()),
@@ -796,7 +796,7 @@ mod tests {
         let css = variant_to_css(&variant, "test");
         assert!(css.contains("--fgColor-default: #111;"));
         assert!(css.contains("--bgColor-default: #444;"));
-        assert!(css.contains("--sheen-fg: #bbb;"));
+        assert!(css.contains("--birta-fg: #bbb;"));
         assert!(css.contains("--alert-note: #e01;"));
         assert!(css.contains("--alert-note-bg: #e0133;"));
         assert!(css.contains(":root,"));
@@ -816,9 +816,9 @@ mod tests {
             bg_secondary: None,
             border_primary: None,
             border_muted: None,
-            fg_sheen: None,
-            bg_sheen: None,
-            border_sheen: None,
+            fg_birta: None,
+            bg_birta: None,
+            border_birta: None,
             alert_note: None,
             alert_tip: None,
             alert_important: None,

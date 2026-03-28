@@ -12,22 +12,22 @@ A short description of the project with **bold** and *italic* text.
 ## Installation
 
 ```bash
-cargo install sheen
+cargo install birta
 ```
 
 ## Usage
 
 | Command | Description |
 |---------|-------------|
-| `sheen file.md` | Preview a file |
-| `sheen --port 3000 file.md` | Use specific port |
+| `birta file.md` | Preview a file |
+| `birta --port 3000 file.md` | Use specific port |
 
 ## API
 
 The main function accepts a `&str` and returns rendered HTML:
 
 ```rust
-let html = sheen::render("# Hello");
+let html = birta::render("# Hello");
 assert!(html.contains("<h1>"));
 ```
 

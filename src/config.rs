@@ -97,7 +97,7 @@ where
     match ThemeValue::deserialize(deserializer) {
         Ok(ThemeValue::Name(name)) => {
             eprintln!(
-                "sheen: warning: `theme = \"...\"` is deprecated, use `[theme]` table with `name = \"...\"`"
+                "birta: warning: `theme = \"...\"` is deprecated, use `[theme]` table with `name = \"...\"`"
             );
             Ok(ThemeConfig {
                 name: Some(name),
@@ -111,14 +111,14 @@ where
     }
 }
 
-/// Load config from `~/.config/sheen/config.toml` if it exists.
+/// Load config from `~/.config/birta/config.toml` if it exists.
 pub fn load() -> Config {
     config_path()
         .and_then(|path| std::fs::read_to_string(&path).ok())
         .and_then(|contents| match toml::from_str(&contents) {
             Ok(config) => Some(config),
             Err(e) => {
-                eprintln!("sheen: warning: failed to parse config: {e}");
+                eprintln!("birta: warning: failed to parse config: {e}");
                 None
             }
         })
@@ -126,7 +126,7 @@ pub fn load() -> Config {
 }
 
 fn config_path() -> Option<PathBuf> {
-    dirs::home_dir().map(|d| d.join(".config").join("sheen").join("config.toml"))
+    dirs::home_dir().map(|d| d.join(".config").join("birta").join("config.toml"))
 }
 
 #[cfg(test)]

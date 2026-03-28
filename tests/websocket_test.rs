@@ -13,21 +13,21 @@ async fn start_server(tmpfile: &NamedTempFile) -> u16 {
     let port = listener.local_addr().unwrap().port();
 
     tokio::spawn(async move {
-        let theme = sheen::theme::ResolvedTheme {
+        let theme = birta::theme::ResolvedTheme {
             name: "github".to_string(),
-            variants: sheen::theme::ThemeVariants::Both {
-                light: Box::new(sheen::theme::VariantData {
+            variants: birta::theme::ThemeVariants::Both {
+                light: Box::new(birta::theme::VariantData {
                     css_vars: String::new(),
                     syntax: None,
                 }),
-                dark: Box::new(sheen::theme::VariantData {
+                dark: Box::new(birta::theme::VariantData {
                     css_vars: String::new(),
                     syntax: None,
                 }),
             },
-            active_variant: sheen::theme::Variant::Dark,
+            active_variant: birta::theme::Variant::Dark,
         };
-        let opts = sheen::server::ServerOptions {
+        let opts = birta::server::ServerOptions {
             port: 0,
             no_open: true,
             custom_css: None,
@@ -38,9 +38,7 @@ async fn start_server(tmpfile: &NamedTempFile) -> u16 {
             show_header: true,
             reading_mode: false,
         };
-        sheen::server::start(path, listener, opts)
-            .await
-            .unwrap();
+        birta::server::start(path, listener, opts).await.unwrap();
     });
 
     // Wait for server to be ready

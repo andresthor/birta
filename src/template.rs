@@ -53,12 +53,12 @@ pub fn render_page(opts: &PageOptions<'_>) -> String {
         active.css_vars.clone()
     };
 
-    // data-sheen-theme gates alert color overrides — skip for github
+    // data-birta-theme gates alert color overrides — skip for github
     // so the vendored github-markdown.css alert rules apply untouched.
     let theme_attr = if is_github {
         String::new()
     } else {
-        format!("data-sheen-theme=\"{}\"", theme.name)
+        format!("data-birta-theme=\"{}\"", theme.name)
     };
 
     // Theme mode for the browser JS
@@ -97,8 +97,14 @@ pub fn render_page(opts: &PageOptions<'_>) -> String {
         .replace("{{THEME_VARS_CSS}}", &theme_vars_css)
         .replace("{{FONT_CSS}}", font_css.unwrap_or(""))
         .replace("{{CUSTOM_CSS}}", &custom_style)
-        .replace("{{HEADER_CLASS}}", if *show_header { "" } else { " header-hidden" })
-        .replace("{{BODY_CLASS}}", if *reading_mode { " reading-mode" } else { "" })
+        .replace(
+            "{{HEADER_CLASS}}",
+            if *show_header { "" } else { " header-hidden" },
+        )
+        .replace(
+            "{{BODY_CLASS}}",
+            if *reading_mode { " reading-mode" } else { "" },
+        )
         .replace("{{THEME_MODE}}", theme_mode)
         .replace("{{THEME_ATTR}}", &theme_attr)
         .replace("{{ACTIVE_VARIANT}}", active_variant)

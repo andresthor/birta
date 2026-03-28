@@ -1,4 +1,4 @@
-# Sheen Test Document
+# Birta Test Document
 
 This is a comprehensive test fixture for Playwright E2E tests.
 
@@ -33,7 +33,7 @@ Auto-linked URL: https://example.com
 
 ```rust
 fn main() {
-    println!("Hello, sheen!");
+    println!("Hello, birta!");
 }
 ```
 

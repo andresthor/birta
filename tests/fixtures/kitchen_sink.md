@@ -68,7 +68,7 @@ Another term
 
 ```rust
 fn main() {
-    println!("Hello, sheen!");
+    println!("Hello, birta!");
 }
 ```
 
