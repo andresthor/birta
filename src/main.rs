@@ -6,67 +6,85 @@ use clap::Parser;
 #[derive(Parser)]
 #[command(
     version,
-    about = "Preview markdown files in the browser with GitHub-style rendering"
+    about = "Preview markdown files in the browser with GitHub-style rendering",
+    max_term_width = 98,
+    after_long_help = "\x1b[1;4mExamples:\x1b[0m
+  birta README.md                        Preview with live reload
+  birta --theme catppuccin README.md     Use a specific theme
+  birta --light --no-header README.md    Light mode, no chrome
+  birta --reading-mode README.md         Distraction-free reading
+  birta --list-themes                    Show available themes
+  cat notes.md | birta -                 Preview from stdin
+
+\x1b[1;4mConfig:\x1b[0m
+  ~/.config/birta/config.toml            Persistent settings
+  ~/.config/birta/themes/<name>.toml     Custom themes"
 )]
 struct Cli {
-    /// Path to the markdown file to preview, or "-" for stdin
+    /// Markdown file to preview, or "-" for stdin
     file: Option<PathBuf>,
 
-    /// Port to serve on (0 = auto-assign)
-    #[arg(short, long)]
+    // -- Server ---------------------------------------------------------------
+
+    /// Port to serve on [default: auto-assign]
+    #[arg(short, long, help_heading = "Server")]
     port: Option<u16>,
 
     /// Don't open the browser automatically
-    #[arg(long)]
+    #[arg(long, help_heading = "Server")]
     no_open: bool,
 
-    /// Custom CSS file to inject after default styles
-    #[arg(long)]
-    css: Option<PathBuf>,
+    // -- Theme ----------------------------------------------------------------
 
-    /// Theme preset name or path to theme file
-    #[arg(long)]
+    /// Theme name or path to .toml theme file
+    #[arg(long, help_heading = "Theme")]
     theme: Option<String>,
 
-    /// Path to a .tmTheme file for syntax highlighting (overrides preset)
-    #[arg(long)]
+    /// Path to a .tmTheme syntax highlighting file
+    #[arg(long, help_heading = "Theme")]
     syntax_theme: Option<PathBuf>,
 
-    /// List available theme presets and exit
-    #[arg(long)]
-    list_themes: bool,
-
-    /// Disable the runtime theme switching dropdown
-    #[arg(long)]
-    no_theme_swap: bool,
-
-    /// Disable the light/dark variant toggle
-    #[arg(long)]
-    no_toggle: bool,
-
-    /// Override body font family (e.g. "Georgia, serif")
-    #[arg(long)]
-    font_body: Option<String>,
-
-    /// Override monospace font family (e.g. "JetBrains Mono, monospace")
-    #[arg(long)]
-    font_mono: Option<String>,
-
-    /// Hide the header bar
-    #[arg(long)]
-    no_header: bool,
-
     /// Start in light mode
-    #[arg(long, conflicts_with = "dark")]
+    #[arg(long, conflicts_with = "dark", help_heading = "Theme")]
     light: bool,
 
     /// Start in dark mode
-    #[arg(long, conflicts_with = "light")]
+    #[arg(long, conflicts_with = "light", help_heading = "Theme")]
     dark: bool,
 
+    /// List installed themes and exit
+    #[arg(long, help_heading = "Theme")]
+    list_themes: bool,
+
+    // -- Display --------------------------------------------------------------
+
+    /// Custom CSS file to inject after default styles
+    #[arg(long, help_heading = "Display")]
+    css: Option<PathBuf>,
+
+    /// Body font family (e.g. "Georgia, serif")
+    #[arg(long, help_heading = "Display")]
+    font_body: Option<String>,
+
+    /// Monospace font family (e.g. "JetBrains Mono")
+    #[arg(long, help_heading = "Display")]
+    font_mono: Option<String>,
+
     /// Start in reading mode
-    #[arg(long)]
+    #[arg(long, help_heading = "Display")]
     reading_mode: bool,
+
+    /// Hide the header bar
+    #[arg(long, help_heading = "Display")]
+    no_header: bool,
+
+    /// Disable the theme switching dropdown
+    #[arg(long, help_heading = "Display")]
+    no_theme_swap: bool,
+
+    /// Disable the light/dark toggle
+    #[arg(long, help_heading = "Display")]
+    no_toggle: bool,
 }
 
 #[tokio::main]
