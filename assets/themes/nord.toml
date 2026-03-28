@@ -1,0 +1,30 @@
+[theme]
+name = "nord"
+
+[theme.dark]
+fg_primary = "#d8dee9"
+fg_muted = "#4c566a"
+fg_accent = "#88c0d0"
+bg_primary = "#2e3440"
+bg_muted = "#3b4252"
+bg_neutral_muted = "#3b425266"
+bg_attention_muted = "#ebcb8b26"
+bg_secondary = "#3b4252"
+border_primary = "#434c5e"
+border_muted = "#3b4252"
+fg_sheen = "#e5e9f0"
+bg_sheen = "#2e3440"
+border_sheen = "#434c5e"
+alert_note = "#5e81ac"
+alert_tip = "#a3be8c"
+alert_important = "#b48ead"
+alert_warning = "#ebcb8b"
+alert_caution = "#bf616a"
+alert_note_bg = "#5e81ac33"
+alert_tip_bg = "#a3be8c33"
+alert_important_bg = "#b48ead33"
+alert_warning_bg = "#ebcb8b33"
+alert_caution_bg = "#bf616a33"
+
+[theme.dark.syntax]
+filepath = "./syntax/nord.tmTheme"

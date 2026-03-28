@@ -1,0 +1,30 @@
+[theme]
+name = "monokai"
+
+[theme.dark]
+fg_primary = "#f8f8f2"
+fg_muted = "#75715e"
+fg_accent = "#66d9ef"
+bg_primary = "#272822"
+bg_muted = "#1e1f1c"
+bg_neutral_muted = "#1e1f1c66"
+bg_attention_muted = "#fd971f26"
+bg_secondary = "#1e1f1c"
+border_primary = "#414339"
+border_muted = "#3e3d32"
+fg_sheen = "#f8f8f2"
+bg_sheen = "#272822"
+border_sheen = "#414339"
+alert_note = "#66d9ef"
+alert_tip = "#a6e22e"
+alert_important = "#ae81ff"
+alert_warning = "#fd971f"
+alert_caution = "#f92672"
+alert_note_bg = "#66d9ef33"
+alert_tip_bg = "#a6e22e33"
+alert_important_bg = "#ae81ff33"
+alert_warning_bg = "#fd971f33"
+alert_caution_bg = "#f9267233"
+
+[theme.dark.syntax]
+filepath = "./syntax/monokai.tmTheme"

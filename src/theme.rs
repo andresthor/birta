@@ -44,6 +44,82 @@ static BUNDLED_THEMES: &[BundledTheme] = &[
             include_bytes!("../assets/themes/syntax/dracula.tmTheme"),
         )],
     },
+    BundledTheme {
+        name: "gruvbox",
+        toml: include_str!("../assets/themes/gruvbox.toml"),
+        syntax_files: &[
+            (
+                "syntax/gruvbox-light.tmTheme",
+                include_bytes!("../assets/themes/syntax/gruvbox-light.tmTheme"),
+            ),
+            (
+                "syntax/gruvbox-dark.tmTheme",
+                include_bytes!("../assets/themes/syntax/gruvbox-dark.tmTheme"),
+            ),
+        ],
+    },
+    BundledTheme {
+        name: "monokai",
+        toml: include_str!("../assets/themes/monokai.toml"),
+        syntax_files: &[(
+            "syntax/monokai.tmTheme",
+            include_bytes!("../assets/themes/syntax/monokai.tmTheme"),
+        )],
+    },
+    BundledTheme {
+        name: "night-owl",
+        toml: include_str!("../assets/themes/night-owl.toml"),
+        syntax_files: &[(
+            "syntax/night-owl.tmTheme",
+            include_bytes!("../assets/themes/syntax/night-owl.tmTheme"),
+        )],
+    },
+    BundledTheme {
+        name: "nord",
+        toml: include_str!("../assets/themes/nord.toml"),
+        syntax_files: &[(
+            "syntax/nord.tmTheme",
+            include_bytes!("../assets/themes/syntax/nord.tmTheme"),
+        )],
+    },
+    BundledTheme {
+        name: "one-dark",
+        toml: include_str!("../assets/themes/one-dark.toml"),
+        syntax_files: &[(
+            "syntax/one-dark.tmTheme",
+            include_bytes!("../assets/themes/syntax/one-dark.tmTheme"),
+        )],
+    },
+    BundledTheme {
+        name: "rose-pine",
+        toml: include_str!("../assets/themes/rose-pine.toml"),
+        syntax_files: &[
+            (
+                "syntax/rose-pine.tmTheme",
+                include_bytes!("../assets/themes/syntax/rose-pine.tmTheme"),
+            ),
+            (
+                "syntax/rose-pine-dawn.tmTheme",
+                include_bytes!("../assets/themes/syntax/rose-pine-dawn.tmTheme"),
+            ),
+        ],
+    },
+    BundledTheme {
+        name: "synthwave-84",
+        toml: include_str!("../assets/themes/synthwave-84.toml"),
+        syntax_files: &[(
+            "syntax/synthwave-84.tmTheme",
+            include_bytes!("../assets/themes/syntax/synthwave-84.tmTheme"),
+        )],
+    },
+    BundledTheme {
+        name: "tokyo-night",
+        toml: include_str!("../assets/themes/tokyo-night.toml"),
+        syntax_files: &[(
+            "syntax/tokyo-night.tmTheme",
+            include_bytes!("../assets/themes/syntax/tokyo-night.tmTheme"),
+        )],
+    },
 ];
 
 // ---------------------------------------------------------------------------

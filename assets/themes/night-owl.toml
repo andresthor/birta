@@ -1,0 +1,30 @@
+[theme]
+name = "night-owl"
+
+[theme.dark]
+fg_primary = "#d6deeb"
+fg_muted = "#5f7e97"
+fg_accent = "#82aaff"
+bg_primary = "#011627"
+bg_muted = "#0b2942"
+bg_neutral_muted = "#0b294266"
+bg_attention_muted = "#c5e47826"
+bg_secondary = "#011627"
+border_primary = "#5f7e97"
+border_muted = "#122d42"
+fg_sheen = "#d6deeb"
+bg_sheen = "#011627"
+border_sheen = "#122d42"
+alert_note = "#82aaff"
+alert_tip = "#22da6e"
+alert_important = "#c792ea"
+alert_warning = "#c5e478"
+alert_caution = "#ef5350"
+alert_note_bg = "#82aaff33"
+alert_tip_bg = "#22da6e33"
+alert_important_bg = "#c792ea33"
+alert_warning_bg = "#c5e47833"
+alert_caution_bg = "#ef535033"
+
+[theme.dark.syntax]
+filepath = "./syntax/night-owl.tmTheme"

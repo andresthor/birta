@@ -1,0 +1,30 @@
+[theme]
+name = "one-dark"
+
+[theme.dark]
+fg_primary = "#abb2bf"
+fg_muted = "#5c6370"
+fg_accent = "#61afef"
+bg_primary = "#282c34"
+bg_muted = "#21252b"
+bg_neutral_muted = "#21252b66"
+bg_attention_muted = "#e5c07b26"
+bg_secondary = "#21252b"
+border_primary = "#3e4452"
+border_muted = "#282c34"
+fg_sheen = "#abb2bf"
+bg_sheen = "#282c34"
+border_sheen = "#3e4452"
+alert_note = "#61afef"
+alert_tip = "#98c379"
+alert_important = "#c678dd"
+alert_warning = "#e5c07b"
+alert_caution = "#e06c75"
+alert_note_bg = "#61afef33"
+alert_tip_bg = "#98c37933"
+alert_important_bg = "#c678dd33"
+alert_warning_bg = "#e5c07b33"
+alert_caution_bg = "#e06c7533"
+
+[theme.dark.syntax]
+filepath = "./syntax/one-dark.tmTheme"

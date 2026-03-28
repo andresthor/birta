@@ -1,0 +1,30 @@
+[theme]
+name = "tokyo-night"
+
+[theme.dark]
+fg_primary = "#a9b1d6"
+fg_muted = "#545c7e"
+fg_accent = "#7aa2f7"
+bg_primary = "#1a1b26"
+bg_muted = "#16161e"
+bg_neutral_muted = "#16161e66"
+bg_attention_muted = "#e0af6826"
+bg_secondary = "#16161e"
+border_primary = "#101014"
+border_muted = "#16161e"
+fg_sheen = "#a9b1d6"
+bg_sheen = "#1a1b26"
+border_sheen = "#101014"
+alert_note = "#7aa2f7"
+alert_tip = "#73daca"
+alert_important = "#bb9af7"
+alert_warning = "#e0af68"
+alert_caution = "#f7768e"
+alert_note_bg = "#7aa2f733"
+alert_tip_bg = "#73daca33"
+alert_important_bg = "#bb9af733"
+alert_warning_bg = "#e0af6833"
+alert_caution_bg = "#f7768e33"
+
+[theme.dark.syntax]
+filepath = "./syntax/tokyo-night.tmTheme"
