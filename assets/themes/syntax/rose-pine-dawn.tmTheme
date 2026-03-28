@@ -314,6 +314,28 @@
         <string>#797593</string>
       </dict>
     </dict>
+    <dict>
+      <key>name</key>
+      <string>Diff inserted</string>
+      <key>scope</key>
+      <string>markup.inserted, markup.inserted.diff, punctuation.definition.inserted.diff</string>
+      <key>settings</key>
+      <dict>
+        <key>foreground</key>
+        <string>#56949f</string>
+      </dict>
+    </dict>
+    <dict>
+      <key>name</key>
+      <string>Diff deleted</string>
+      <key>scope</key>
+      <string>markup.deleted, markup.deleted.diff, punctuation.definition.deleted.diff</string>
+      <key>settings</key>
+      <dict>
+        <key>foreground</key>
+        <string>#b4637a</string>
+      </dict>
+    </dict>
   </array>
   <key>colorSpaceName</key>
   <string>sRGB</string>

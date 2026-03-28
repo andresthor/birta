@@ -1090,6 +1090,28 @@ from https://github.com/robb0wen/synthwave-vscode
           <string>#72f1b8</string>
         </dict>
       </dict>
+      <dict>
+        <key>name</key>
+        <string>Diff inserted</string>
+        <key>scope</key>
+        <string>markup.inserted, markup.inserted.diff, punctuation.definition.inserted.diff</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#72f1b8</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>name</key>
+        <string>Diff deleted</string>
+        <key>scope</key>
+        <string>markup.deleted, markup.deleted.diff, punctuation.definition.deleted.diff</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#fe4450</string>
+        </dict>
+      </dict>
     </array>
   </dict>
 </plist>

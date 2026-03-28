@@ -21,11 +21,13 @@ pub fn render_page(
     };
 
     let active = theme.active_data();
-    let has_syntax_theme = active.syntax.is_some();
     let is_github = theme.is_github();
 
-    // When a syntax theme is active, omit syntax.css (inline styles replace it)
-    let syntax_css = if has_syntax_theme { "" } else { SYNTAX_CSS };
+    // Always include syntax.css — it provides CSS-class-based highlighting
+    // for the github theme. When a tmTheme is active (custom themes), syntect
+    // emits inline styles that naturally override these class rules. Keeping
+    // it present ensures theme hot-swap to github works correctly.
+    let syntax_css = SYNTAX_CSS;
 
     // GitHub uses the vendored CSS untouched — theme-overrides.css provides
     // standalone [data-theme] selectors so the dark/light toggle works
