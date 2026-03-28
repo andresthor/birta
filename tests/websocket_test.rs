@@ -27,7 +27,16 @@ async fn start_server(tmpfile: &NamedTempFile) -> u16 {
             },
             active_variant: sheen::theme::Variant::Dark,
         };
-        sheen::server::start(path, listener, None, theme, false, true)
+        let opts = sheen::server::ServerOptions {
+            port: 0,
+            no_open: true,
+            custom_css: None,
+            font_css: None,
+            theme,
+            enable_swap: false,
+            enable_toggle: true,
+        };
+        sheen::server::start(path, listener, opts)
             .await
             .unwrap();
     });

@@ -85,20 +85,21 @@ async fn main() -> anyhow::Result<()> {
 
     let enable_swap = config.theme.controls.show_controls.theme_swap;
     let enable_toggle = config.theme.controls.show_controls.theme_toggle;
+    let font_css = config.font.to_css();
 
     if file.as_os_str() == "-" {
         let mut markdown = String::new();
         std::io::stdin().read_to_string(&mut markdown)?;
-        return sheen::server::run_stdin(
-            &markdown,
+        let opts = sheen::server::ServerOptions {
             port,
             no_open,
-            custom_css.as_deref(),
+            custom_css,
+            font_css,
             theme,
             enable_swap,
             enable_toggle,
-        )
-        .await;
+        };
+        return sheen::server::run_stdin(&markdown, opts).await;
     }
 
     if !file.exists() {
@@ -114,14 +115,14 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
-    sheen::server::run(
-        file,
+    let opts = sheen::server::ServerOptions {
         port,
         no_open,
-        custom_css.as_deref(),
+        custom_css,
+        font_css,
         theme,
         enable_swap,
         enable_toggle,
-    )
-    .await
+    };
+    sheen::server::run(file, opts).await
 }

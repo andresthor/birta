@@ -18,6 +18,17 @@ use crate::{render, template, watcher};
 
 const SHUTDOWN_GRACE_PERIOD: Duration = Duration::from_secs(5);
 
+/// Options for starting the server.
+pub struct ServerOptions {
+    pub port: u16,
+    pub no_open: bool,
+    pub custom_css: Option<String>,
+    pub font_css: Option<String>,
+    pub theme: ResolvedTheme,
+    pub enable_swap: bool,
+    pub enable_toggle: bool,
+}
+
 pub(crate) struct AppState {
     pub(crate) base_dir: PathBuf,
     pub(crate) source_file: Option<PathBuf>,
@@ -34,18 +45,11 @@ pub(crate) struct AppState {
     pub(crate) all_disconnected: Notify,
     pub(crate) registry: RwLock<ThemeRegistry>,
     pub(crate) enable_toggle: bool,
+    pub(crate) font_css: Option<String>,
 }
 
-pub async fn run(
-    file: PathBuf,
-    port: u16,
-    no_open: bool,
-    custom_css: Option<&str>,
-    theme: ResolvedTheme,
-    enable_swap: bool,
-    enable_toggle: bool,
-) -> anyhow::Result<()> {
-    let addr = SocketAddr::from(([127, 0, 0, 1], port));
+pub async fn run(file: PathBuf, opts: ServerOptions) -> anyhow::Result<()> {
+    let addr = SocketAddr::from(([127, 0, 0, 1], opts.port));
     let listener = TcpListener::bind(addr).await?;
     let actual_addr = listener.local_addr()?;
 
@@ -56,51 +60,35 @@ pub async fn run(
 
     eprintln!("sheen: serving {filename} at http://{actual_addr}");
 
-    if !no_open {
+    if !opts.no_open {
         let url = format!("http://{actual_addr}");
         if let Err(e) = open::that(&url) {
             eprintln!("sheen: could not open browser: {e}");
         }
     }
 
-    start(
-        file,
-        listener,
-        custom_css,
-        theme,
-        enable_swap,
-        enable_toggle,
-    )
-    .await
+    start(file, listener, opts).await
 }
 
 /// Serve markdown read from stdin (no file watching).
-pub async fn run_stdin(
-    markdown: &str,
-    port: u16,
-    no_open: bool,
-    custom_css: Option<&str>,
-    theme: ResolvedTheme,
-    enable_swap: bool,
-    enable_toggle: bool,
-) -> anyhow::Result<()> {
-    let addr = SocketAddr::from(([127, 0, 0, 1], port));
+pub async fn run_stdin(markdown: &str, opts: ServerOptions) -> anyhow::Result<()> {
+    let addr = SocketAddr::from(([127, 0, 0, 1], opts.port));
     let listener = TcpListener::bind(addr).await?;
     let actual_addr = listener.local_addr()?;
 
     eprintln!("sheen: serving stdin at http://{actual_addr}");
 
-    if !no_open {
+    if !opts.no_open {
         let url = format!("http://{actual_addr}");
         if let Err(e) = open::that(&url) {
             eprintln!("sheen: could not open browser: {e}");
         }
     }
 
-    let content_html = render::render(markdown, theme.active_data().syntax.as_ref());
+    let content_html = render::render(markdown, opts.theme.active_data().syntax.as_ref());
 
-    let mut registry = ThemeRegistry::new(theme);
-    if enable_swap {
+    let mut registry = ThemeRegistry::new(opts.theme);
+    if opts.enable_swap {
         registry.discover_all();
     }
     let base_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
@@ -113,7 +101,7 @@ pub async fn run_stdin(
         base_dir,
         source_file: None,
         filename: "stdin".to_string(),
-        custom_css: custom_css.map(String::from),
+        custom_css: opts.custom_css,
         current_html: RwLock::new(content_html),
         tx,
         theme_tx,
@@ -121,7 +109,8 @@ pub async fn run_stdin(
         connections: AtomicUsize::new(0),
         all_disconnected: Notify::new(),
         registry: RwLock::new(registry),
-        enable_toggle,
+        enable_toggle: opts.enable_toggle,
+        font_css: opts.font_css,
     });
 
     let app = router(state.clone());
@@ -133,24 +122,17 @@ pub async fn run_stdin(
 }
 
 /// Start serving a markdown file on the given listener.
-pub async fn start(
-    file: PathBuf,
-    listener: TcpListener,
-    custom_css: Option<&str>,
-    theme: ResolvedTheme,
-    enable_swap: bool,
-    enable_toggle: bool,
-) -> anyhow::Result<()> {
+pub async fn start(file: PathBuf, listener: TcpListener, opts: ServerOptions) -> anyhow::Result<()> {
     let markdown = std::fs::read_to_string(&file)?;
-    let content_html = render::render(&markdown, theme.active_data().syntax.as_ref());
+    let content_html = render::render(&markdown, opts.theme.active_data().syntax.as_ref());
 
     let filename = file
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
         .unwrap_or_else(|| "untitled".to_string());
 
-    let mut registry = ThemeRegistry::new(theme);
-    if enable_swap {
+    let mut registry = ThemeRegistry::new(opts.theme);
+    if opts.enable_swap {
         registry.discover_all();
     }
 
@@ -167,7 +149,7 @@ pub async fn start(
         base_dir,
         source_file: Some(file.clone()),
         filename,
-        custom_css: custom_css.map(String::from),
+        custom_css: opts.custom_css,
         current_html: RwLock::new(content_html),
         tx: tx.clone(),
         theme_tx,
@@ -175,7 +157,8 @@ pub async fn start(
         connections: AtomicUsize::new(0),
         all_disconnected: Notify::new(),
         registry: RwLock::new(registry),
-        enable_toggle,
+        enable_toggle: opts.enable_toggle,
+        font_css: opts.font_css,
     });
 
     let state_for_task = Arc::clone(&state);
@@ -266,6 +249,7 @@ async fn index_handler(State(state): State<Arc<AppState>>) -> Html<String> {
         &state.filename,
         &content_html,
         state.custom_css.as_deref(),
+        state.font_css.as_deref(),
         theme,
         &theme_names,
     );
@@ -558,6 +542,7 @@ mod tests {
             all_disconnected: Notify::new(),
             registry: RwLock::new(registry),
             enable_toggle: true,
+            font_css: None,
         })
     }
 
@@ -630,6 +615,7 @@ mod tests {
             all_disconnected: Notify::new(),
             registry: RwLock::new(registry),
             enable_toggle: true,
+            font_css: None,
         });
         router(state)
     }
