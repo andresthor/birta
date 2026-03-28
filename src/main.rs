@@ -36,9 +36,9 @@ struct Cli {
     #[arg(long)]
     list_themes: bool,
 
-    /// Enable runtime theme switching dropdown
+    /// Disable the runtime theme switching dropdown
     #[arg(long)]
-    theme_swap: bool,
+    no_theme_swap: bool,
 
     /// Disable the light/dark variant toggle
     #[arg(long)]
@@ -55,6 +55,18 @@ struct Cli {
     /// Hide the header bar
     #[arg(long)]
     no_header: bool,
+
+    /// Start in light mode
+    #[arg(long, conflicts_with = "dark")]
+    light: bool,
+
+    /// Start in dark mode
+    #[arg(long, conflicts_with = "light")]
+    dark: bool,
+
+    /// Start in reading mode
+    #[arg(long)]
+    reading_mode: bool,
 }
 
 #[tokio::main]
@@ -101,9 +113,16 @@ async fn main() -> anyhow::Result<()> {
         None => None,
     };
 
-    let theme = sheen::theme::resolve(&config, cli.theme.as_deref(), cli.syntax_theme.as_deref())?;
+    let mut theme =
+        sheen::theme::resolve(&config, cli.theme.as_deref(), cli.syntax_theme.as_deref())?;
 
-    let enable_swap = cli.theme_swap || config.theme.controls.show_controls.theme_swap;
+    if cli.light {
+        theme.active_variant = sheen::theme::Variant::Light;
+    } else if cli.dark {
+        theme.active_variant = sheen::theme::Variant::Dark;
+    }
+
+    let enable_swap = !cli.no_theme_swap && config.theme.controls.show_controls.theme_swap;
     let enable_toggle = !cli.no_toggle && config.theme.controls.show_controls.theme_toggle;
     let show_header = !cli.no_header && config.theme.controls.show_controls.header;
 
@@ -125,6 +144,7 @@ async fn main() -> anyhow::Result<()> {
             enable_swap,
             enable_toggle,
             show_header,
+            reading_mode: cli.reading_mode,
         };
         return sheen::server::run_stdin(&markdown, opts).await;
     }
@@ -151,6 +171,7 @@ async fn main() -> anyhow::Result<()> {
         enable_swap,
         enable_toggle,
         show_header,
+        reading_mode: cli.reading_mode,
     };
     sheen::server::run(file, opts).await
 }

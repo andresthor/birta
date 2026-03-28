@@ -7,9 +7,12 @@ local config = {
   css = nil,
   port = nil,
   no_open = false,
-  theme_swap = false,
+  no_theme_swap = false,
   no_toggle = false,
   no_header = false,
+  light = false,
+  dark = false,
+  reading_mode = false,
   font_body = nil,
   font_mono = nil,
 }
@@ -24,9 +27,12 @@ local function build_cmd(file)
   if config.css then table.insert(cmd, "--css"); table.insert(cmd, config.css) end
   if config.port then table.insert(cmd, "--port"); table.insert(cmd, tostring(config.port)) end
   if config.no_open then table.insert(cmd, "--no-open") end
-  if config.theme_swap then table.insert(cmd, "--theme-swap") end
+  if config.no_theme_swap then table.insert(cmd, "--no-theme-swap") end
   if config.no_toggle then table.insert(cmd, "--no-toggle") end
   if config.no_header then table.insert(cmd, "--no-header") end
+  if config.light then table.insert(cmd, "--light") end
+  if config.dark then table.insert(cmd, "--dark") end
+  if config.reading_mode then table.insert(cmd, "--reading-mode") end
   if config.font_body then table.insert(cmd, "--font-body"); table.insert(cmd, config.font_body) end
   if config.font_mono then table.insert(cmd, "--font-mono"); table.insert(cmd, config.font_mono) end
   table.insert(cmd, file)

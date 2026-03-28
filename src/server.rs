@@ -28,6 +28,7 @@ pub struct ServerOptions {
     pub enable_swap: bool,
     pub enable_toggle: bool,
     pub show_header: bool,
+    pub reading_mode: bool,
 }
 
 pub(crate) struct AppState {
@@ -48,6 +49,7 @@ pub(crate) struct AppState {
     pub(crate) enable_toggle: bool,
     pub(crate) font_css: Option<String>,
     pub(crate) show_header: bool,
+    pub(crate) reading_mode: bool,
 }
 
 pub async fn run(file: PathBuf, opts: ServerOptions) -> anyhow::Result<()> {
@@ -114,6 +116,7 @@ pub async fn run_stdin(markdown: &str, opts: ServerOptions) -> anyhow::Result<()
         enable_toggle: opts.enable_toggle,
         font_css: opts.font_css,
         show_header: opts.show_header,
+        reading_mode: opts.reading_mode,
     });
 
     let app = router(state.clone());
@@ -163,6 +166,7 @@ pub async fn start(file: PathBuf, listener: TcpListener, opts: ServerOptions) ->
         enable_toggle: opts.enable_toggle,
         font_css: opts.font_css,
         show_header: opts.show_header,
+        reading_mode: opts.reading_mode,
     });
 
     let state_for_task = Arc::clone(&state);
@@ -249,15 +253,16 @@ async fn index_handler(State(state): State<Arc<AppState>>) -> Html<String> {
     let theme = registry.active();
     let theme_names: Vec<&str> = registry.theme_names();
     let content_html = state.current_html.read().await;
-    let page = template::render_page(
-        &state.filename,
-        &content_html,
-        state.custom_css.as_deref(),
-        state.font_css.as_deref(),
-        state.show_header,
+    let page = template::render_page(&template::PageOptions {
+        filename: &state.filename,
+        content_html: &content_html,
+        custom_css: state.custom_css.as_deref(),
+        font_css: state.font_css.as_deref(),
+        show_header: state.show_header,
+        reading_mode: state.reading_mode,
         theme,
-        &theme_names,
-    );
+        theme_names: &theme_names,
+    });
     Html(page)
 }
 
@@ -549,6 +554,7 @@ mod tests {
             enable_toggle: true,
             font_css: None,
             show_header: true,
+            reading_mode: false,
         })
     }
 
@@ -623,6 +629,7 @@ mod tests {
             enable_toggle: true,
             font_css: None,
             show_header: true,
+            reading_mode: false,
         });
         router(state)
     }

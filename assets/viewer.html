@@ -16,7 +16,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 </head>
-<body>
+<body class="{{BODY_CLASS}}">
   <header class="header{{HEADER_CLASS}}">
     <div class="header-left">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -89,7 +89,7 @@
     var readingExitZone = document.getElementById('reading-exit-zone');
     var readingExitBar = document.getElementById('reading-exit-bar');
     var readingExitBtn = document.getElementById('reading-exit-btn');
-    var isReadingMode = false;
+    var isReadingMode = document.body.classList.contains('reading-mode');
 
     function toggleReadingMode(force) {
       isReadingMode = typeof force === 'boolean' ? force : !isReadingMode;
@@ -112,6 +112,13 @@
 
     readingToggle.addEventListener('click', function() { toggleReadingMode(); });
     readingExitBtn.addEventListener('click', function() { toggleReadingMode(false); });
+
+    // Initialize reading mode UI if started via --reading-mode
+    if (isReadingMode) {
+      readingProgress.style.display = 'block';
+      readingExitZone.style.display = 'block';
+      updateProgress();
+    }
 
     document.addEventListener('keydown', function(e) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
@@ -152,6 +159,12 @@
       // If only one option in select, hide it
       if (themeSelect.options.length <= 1) {
         themeSelect.style.display = 'none';
+      }
+
+      // Respect OS light/dark preference for dual-variant themes
+      if (THEME_MODE === 'toggle' && window.matchMedia) {
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        activeVariant = prefersDark ? 'dark' : 'light';
       }
 
       applyVariant(activeVariant);

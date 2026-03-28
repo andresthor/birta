@@ -58,7 +58,7 @@ pub struct ThemeControls {
 
 #[derive(Debug, Deserialize)]
 pub struct ControlFlags {
-    #[serde(default)]
+    #[serde(default = "default_true")]
     pub theme_swap: bool,
     #[serde(default = "default_true")]
     pub theme_toggle: bool,
@@ -69,7 +69,7 @@ pub struct ControlFlags {
 impl Default for ControlFlags {
     fn default() -> Self {
         Self {
-            theme_swap: false,
+            theme_swap: true,
             theme_toggle: true,
             header: true,
         }
@@ -159,7 +159,7 @@ show_controls = { theme_swap = true, theme_toggle = true }
     fn parse_empty_config() {
         let config: Config = toml::from_str("").unwrap();
         assert!(config.theme.name.is_none());
-        assert!(!config.theme.controls.show_controls.theme_swap);
+        assert!(config.theme.controls.show_controls.theme_swap);
         assert!(config.theme.controls.show_controls.theme_toggle);
     }
 
@@ -195,7 +195,7 @@ name = "github"
 "#;
         let config: Config = toml::from_str(toml_str).unwrap();
         assert_eq!(config.theme.name.as_deref(), Some("github"));
-        assert!(!config.theme.controls.show_controls.theme_swap);
+        assert!(config.theme.controls.show_controls.theme_swap);
         assert!(config.theme.controls.show_controls.theme_toggle);
     }
 }

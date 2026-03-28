@@ -7,15 +7,28 @@ const SYNTAX_CSS: &str = include_str!("../assets/syntax.css");
 const ALERTS_CSS: &str = include_str!("../assets/alerts.css");
 const THEME_OVERRIDES: &str = include_str!("../assets/theme-overrides.css");
 
-pub fn render_page(
-    filename: &str,
-    content_html: &str,
-    custom_css: Option<&str>,
-    font_css: Option<&str>,
-    show_header: bool,
-    theme: &ResolvedTheme,
-    theme_names: &[&str],
-) -> String {
+pub struct PageOptions<'a> {
+    pub filename: &'a str,
+    pub content_html: &'a str,
+    pub custom_css: Option<&'a str>,
+    pub font_css: Option<&'a str>,
+    pub show_header: bool,
+    pub reading_mode: bool,
+    pub theme: &'a ResolvedTheme,
+    pub theme_names: &'a [&'a str],
+}
+
+pub fn render_page(opts: &PageOptions<'_>) -> String {
+    let PageOptions {
+        filename,
+        content_html,
+        custom_css,
+        font_css,
+        show_header,
+        reading_mode,
+        theme,
+        theme_names,
+    } = opts;
     let custom_style = match custom_css {
         Some(css) => format!("<style>{css}</style>"),
         None => String::new(),
@@ -84,7 +97,8 @@ pub fn render_page(
         .replace("{{THEME_VARS_CSS}}", &theme_vars_css)
         .replace("{{FONT_CSS}}", font_css.unwrap_or(""))
         .replace("{{CUSTOM_CSS}}", &custom_style)
-        .replace("{{HEADER_CLASS}}", if show_header { "" } else { " header-hidden" })
+        .replace("{{HEADER_CLASS}}", if *show_header { "" } else { " header-hidden" })
+        .replace("{{BODY_CLASS}}", if *reading_mode { " reading-mode" } else { "" })
         .replace("{{THEME_MODE}}", theme_mode)
         .replace("{{THEME_ATTR}}", &theme_attr)
         .replace("{{ACTIVE_VARIANT}}", active_variant)
@@ -116,72 +130,47 @@ mod tests {
         }
     }
 
+    fn test_page(content: &str, custom_css: Option<&str>) -> String {
+        let theme = github_theme();
+        render_page(&PageOptions {
+            filename: "test.md",
+            content_html: content,
+            custom_css,
+            font_css: None,
+            show_header: true,
+            reading_mode: false,
+            theme: &theme,
+            theme_names: &["github"],
+        })
+    }
+
     #[test]
     fn render_page_contains_filename() {
-        let page = render_page(
-            "test.md",
-            "<p>hello</p>",
-            None,
-            None,
-            true,
-            &github_theme(),
-            &["github"],
-        );
-        assert!(
-            page.contains("test.md"),
-            "rendered page should contain the filename"
-        );
+        let page = test_page("<p>hello</p>", None);
+        assert!(page.contains("test.md"));
     }
 
     #[test]
     fn render_page_contains_content() {
-        let page = render_page(
-            "test.md",
-            "<p>hello</p>",
-            None,
-            None,
-            true,
-            &github_theme(),
-            &["github"],
-        );
-        assert!(
-            page.contains("<p>hello</p>"),
-            "rendered page should contain the content HTML"
-        );
+        let page = test_page("<p>hello</p>", None);
+        assert!(page.contains("<p>hello</p>"));
     }
 
     #[test]
     fn render_page_contains_markdown_body_class() {
-        let page = render_page("test.md", "", None, None, true, &github_theme(), &["github"]);
-        assert!(
-            page.contains("markdown-body"),
-            "rendered page should contain the markdown-body class"
-        );
+        let page = test_page("", None);
+        assert!(page.contains("markdown-body"));
     }
 
     #[test]
     fn render_page_contains_github_css() {
-        let page = render_page("test.md", "", None, None, true, &github_theme(), &["github"]);
-        assert!(
-            page.contains(".markdown-body"),
-            "rendered page should contain github-markdown-css rules"
-        );
+        let page = test_page("", None);
+        assert!(page.contains(".markdown-body"));
     }
 
     #[test]
     fn render_page_includes_custom_css() {
-        let page = render_page(
-            "test.md",
-            "",
-            Some("body { color: red; }"),
-            None,
-            true,
-            &github_theme(),
-            &["github"],
-        );
-        assert!(
-            page.contains("body { color: red; }"),
-            "rendered page should contain the custom CSS"
-        );
+        let page = test_page("", Some("body { color: red; }"));
+        assert!(page.contains("body { color: red; }"));
     }
 }
