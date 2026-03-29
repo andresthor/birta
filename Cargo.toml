@@ -8,6 +8,7 @@ repository = "https://github.com/andresthor/birta"
 readme = "README.md"
 keywords = ["markdown", "preview", "browser", "github", "live-reload"]
 categories = ["command-line-utilities", "text-processing"]
+homepage = "https://github.com/andresthor/birta"
 
 [dependencies]
 anyhow = "1"
@@ -33,3 +34,8 @@ insta = { version = "1.46.3", features = ["glob"] }
 tempfile = "3"
 tokio-tungstenite = "0.26"
 tower = { version = "0.5.3", features = ["util"] }
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"

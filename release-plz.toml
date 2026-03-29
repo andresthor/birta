@@ -1,0 +1,3 @@
+[workspace]
+# cargo-dist handles GitHub Releases, so disable release-plz's own
+git_release_enable = false
