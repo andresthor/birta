@@ -256,9 +256,7 @@ fn run_static(
 
     eprintln!("birta: wrote {}", out_path.display());
 
-    if !no_open
-        && let Err(e) = open::that(&out_path)
-    {
+    if !no_open && let Err(e) = open::that(&out_path) {
         eprintln!("birta: failed to open browser: {e}");
     }
 

@@ -28,7 +28,8 @@ pub fn render_page(opts: &PageOptions<'_>) -> String {
         show_header,
         reading_mode,
         theme,
-        theme_names, ..
+        theme_names,
+        ..
     } = opts;
     let custom_style = match custom_css {
         Some(css) => format!("<style>{css}</style>"),
