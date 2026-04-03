@@ -18,5 +18,5 @@ hosting = "github"
 # Whether to install an updater program
 install-updater = false
 # Publish Homebrew formula to this tap
-tap = "andresthor/homebrew-tap"
+tap = "hugvit/homebrew-tap"
 publish-jobs = ["homebrew"]

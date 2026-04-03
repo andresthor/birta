@@ -7,7 +7,7 @@
 </h3>
 
 <p align="center">
-  Brighten your markdown
+  <em>from the Icelandic for brighten and publish, because that's what it does to your markdown.</em>
 </p>
 
 <p align="center">
@@ -19,21 +19,21 @@
     <img src="https://img.shields.io/crates/v/birta?style=for-the-badge&colorA=363a4f&colorB=a3d5d4" alt="crates.io"/>
   </a>
   &nbsp;
-  <a href="https://github.com/andresthor/homebrew-tap">
+  <a href="https://github.com/hugvit/homebrew-tap">
     <img src="https://img.shields.io/badge/homebrew-tap-ffdd98?style=for-the-badge&colorA=363a4f" alt="Homebrew"/>
   </a>
   &nbsp;
-  <a href="https://github.com/andresthor/birta/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/andresthor/birta?style=for-the-badge&colorA=363a4f&colorB=c4d9a8" alt="License"/>
+  <a href="https://github.com/hugvit/birta/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/hugvit/birta?style=for-the-badge&colorA=363a4f&colorB=c4d9a7" alt="License"/>
   </a>
 </p>
 
 <!-- TODO: Add hero screenshot
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/andresthor/birta/main/assets/readme/screenshot-dark.png"/>
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/andresthor/birta/main/assets/readme/screenshot-light.png"/>
-    <img src="https://raw.githubusercontent.com/andresthor/birta/main/assets/readme/screenshot-light.png" width="700" alt="birta preview"/>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/hugvit/birta/main/assets/readme/screenshot-dark.png"/>
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/hugvit/birta/main/assets/readme/screenshot-light.png"/>
+    <img src="https://raw.githubusercontent.com/hugvit/birta/main/assets/readme/screenshot-light.png" width="700" alt="birta preview"/>
   </picture>
 </p>
 -->
@@ -79,7 +79,7 @@ cargo install birta
 <summary>Homebrew</summary>
 
 ```bash
-brew install andresthor/tap/birta
+brew install hugvit/tap/birta
 ```
 
 </details>
@@ -88,7 +88,7 @@ brew install andresthor/tap/birta
 <summary>From source</summary>
 
 ```bash
-git clone https://github.com/andresthor/birta.git
+git clone https://github.com/hugvit/birta.git
 cd birta
 cargo install --path .
 ```
@@ -138,17 +138,17 @@ Run `birta --help` for the full flag reference.
 <!-- TODO: Add theme screenshots in accordions
 <details>
 <summary>GitHub (default)</summary>
-<img src="https://raw.githubusercontent.com/andresthor/birta/main/assets/readme/theme-github.png" alt="GitHub theme"/>
+<img src="https://raw.githubusercontent.com/hugvit/birta/main/assets/readme/theme-github.png" alt="GitHub theme"/>
 </details>
 
 <details>
 <summary>Catppuccin</summary>
-<img src="https://raw.githubusercontent.com/andresthor/birta/main/assets/readme/theme-catppuccin.png" alt="Catppuccin theme"/>
+<img src="https://raw.githubusercontent.com/hugvit/birta/main/assets/readme/theme-catppuccin.png" alt="Catppuccin theme"/>
 </details>
 
 <details>
 <summary>Dracula</summary>
-<img src="https://raw.githubusercontent.com/andresthor/birta/main/assets/readme/theme-dracula.png" alt="Dracula theme"/>
+<img src="https://raw.githubusercontent.com/hugvit/birta/main/assets/readme/theme-dracula.png" alt="Dracula theme"/>
 </details>
 -->
 
@@ -156,7 +156,7 @@ Bundled: `github` `catppuccin` `dracula` `gruvbox` `monokai` `night-owl` `nord` 
 
 Themes with both light and dark variants get a toggle in the header. Switch themes at runtime from the dropdown — no restart needed.
 
-Custom themes go in `~/.config/birta/themes/` as TOML files. See the [bundled themes](https://github.com/andresthor/birta/tree/main/assets/themes) for the format.
+Custom themes go in `~/.config/birta/themes/` as TOML files. See the [bundled themes](https://github.com/hugvit/birta/tree/main/assets/themes) for the format.
 
 &nbsp;
 
@@ -181,12 +181,12 @@ All settings can be overridden with CLI flags. Run `birta --help` for the comple
 
 ## Neovim
 
-The Neovim plugin lives in a separate repo: [birta.nvim](https://github.com/andresthor/birta.nvim)
+The Neovim plugin lives in a separate repo: [birta.nvim](https://github.com/hugvit/birta.nvim)
 
 ```lua
 -- lazy.nvim
 {
-  "andresthor/birta.nvim",
+  "hugvit/birta.nvim",
   cmd = { "BirtaPreview", "BirtaStop", "BirtaToggle" },
   opts = {
     theme = "catppuccin",
