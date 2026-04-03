@@ -7,6 +7,8 @@ pub struct Config {
     pub port: Option<u16>,
     pub no_open: Option<bool>,
     pub css: Option<PathBuf>,
+    pub reading_mode: Option<bool>,
+    pub syntax_theme: Option<PathBuf>,
     #[serde(default, deserialize_with = "deserialize_theme_config")]
     pub theme: ThemeConfig,
     #[serde(default)]
@@ -46,6 +48,7 @@ impl FontConfig {
 #[derive(Debug, Default, Deserialize)]
 pub struct ThemeConfig {
     pub name: Option<String>,
+    pub variant: Option<String>,
     #[serde(default)]
     pub controls: ThemeControls,
 }
@@ -101,6 +104,7 @@ where
             );
             Ok(ThemeConfig {
                 name: Some(name),
+                variant: None,
                 controls: ThemeControls::default(),
             })
         }
@@ -197,5 +201,48 @@ name = "github"
         assert_eq!(config.theme.name.as_deref(), Some("github"));
         assert!(config.theme.controls.show_controls.theme_swap);
         assert!(config.theme.controls.show_controls.theme_toggle);
+    }
+
+    #[test]
+    fn parse_reading_mode() {
+        let config: Config = toml::from_str("reading_mode = true").unwrap();
+        assert_eq!(config.reading_mode, Some(true));
+    }
+
+    #[test]
+    fn parse_reading_mode_default_none() {
+        let config: Config = toml::from_str("").unwrap();
+        assert!(config.reading_mode.is_none());
+    }
+
+    #[test]
+    fn parse_syntax_theme() {
+        let config: Config =
+            toml::from_str(r#"syntax_theme = "/path/to/monokai.tmTheme""#).unwrap();
+        assert_eq!(
+            config.syntax_theme,
+            Some(PathBuf::from("/path/to/monokai.tmTheme"))
+        );
+    }
+
+    #[test]
+    fn parse_theme_variant() {
+        let toml_str = r#"
+[theme]
+name = "catppuccin"
+variant = "dark"
+"#;
+        let config: Config = toml::from_str(toml_str).unwrap();
+        assert_eq!(config.theme.variant.as_deref(), Some("dark"));
+    }
+
+    #[test]
+    fn parse_theme_variant_default_none() {
+        let toml_str = r#"
+[theme]
+name = "github"
+"#;
+        let config: Config = toml::from_str(toml_str).unwrap();
+        assert!(config.theme.variant.is_none());
     }
 }

@@ -44,10 +44,11 @@ pub struct MergedOptions {
 /// logic: the feature is enabled only if both CLI and config agree. A `no_*`
 /// flag from CLI disables it; `show_controls.x = false` in config disables it.
 ///
-/// `no_open` uses OR logic: either source being true enables the behavior.
+/// `no_open` and `reading_mode` use OR logic: either source being true
+/// enables the behavior.
 ///
-/// `reading_mode` and `syntax_theme` are currently CLI-only (no config
-/// equivalent yet). Config support will be added in a follow-up.
+/// Variant preference: CLI `--light`/`--dark` flags take priority over
+/// `theme.variant` in config. When neither is set, the theme default applies.
 pub fn merge(cli: CliOptions, config: &Config) -> MergedOptions {
     let port = cli.port.or(config.port).unwrap_or(0);
     let no_open = cli.no_open || config.no_open.unwrap_or(false);
@@ -55,7 +56,7 @@ pub fn merge(cli: CliOptions, config: &Config) -> MergedOptions {
     let css_path = cli.css.or(config.css.clone());
 
     let theme_name = cli.theme.or(config.theme.name.clone());
-    let syntax_theme = cli.syntax_theme;
+    let syntax_theme = cli.syntax_theme.or(config.syntax_theme.clone());
 
     let font_body = cli.font_body.or(config.font.body.clone());
     let font_mono = cli.font_mono.or(config.font.mono.clone());
@@ -64,7 +65,24 @@ pub fn merge(cli: CliOptions, config: &Config) -> MergedOptions {
     let enable_toggle = !cli.no_toggle && config.theme.controls.show_controls.theme_toggle;
     let show_header = !cli.no_header && config.theme.controls.show_controls.header;
 
-    let reading_mode = cli.reading_mode;
+    let reading_mode = cli.reading_mode || config.reading_mode.unwrap_or(false);
+
+    // CLI --light/--dark override config variant preference
+    let (light, dark) = if cli.light || cli.dark {
+        (cli.light, cli.dark)
+    } else {
+        match config.theme.variant.as_deref() {
+            Some("light") => (true, false),
+            Some("dark") => (false, true),
+            Some(other) => {
+                eprintln!(
+                    "birta: warning: unknown theme variant '{other}', expected 'light' or 'dark'"
+                );
+                (false, false)
+            }
+            None => (false, false),
+        }
+    };
 
     MergedOptions {
         port,
@@ -72,8 +90,8 @@ pub fn merge(cli: CliOptions, config: &Config) -> MergedOptions {
         css_path,
         theme_name,
         syntax_theme,
-        light: cli.light,
-        dark: cli.dark,
+        light,
+        dark,
         font_body,
         font_mono,
         reading_mode,
@@ -224,13 +242,13 @@ mod tests {
     fn merge_controls_config_disables_header() {
         let config = Config {
             theme: ThemeConfig {
-                name: None,
                 controls: ThemeControls {
                     show_controls: ControlFlags {
                         header: false,
                         ..Default::default()
                     },
                 },
+                ..Default::default()
             },
             ..Default::default()
         };
@@ -268,12 +286,22 @@ mod tests {
     }
 
     #[test]
-    fn merge_reading_mode_cli_only() {
+    fn merge_reading_mode_cli_enables() {
         let cli = CliOptions {
             reading_mode: true,
             ..Default::default()
         };
         let merged = merge(cli, &default_config());
+        assert!(merged.reading_mode);
+    }
+
+    #[test]
+    fn merge_reading_mode_config_enables() {
+        let config = Config {
+            reading_mode: Some(true),
+            ..Default::default()
+        };
+        let merged = merge(CliOptions::default(), &config);
         assert!(merged.reading_mode);
     }
 
@@ -314,13 +342,55 @@ mod tests {
     }
 
     #[test]
-    fn merge_light_dark_flags_pass_through() {
+    fn merge_variant_cli_light_wins() {
         let cli = CliOptions {
             light: true,
             ..Default::default()
         };
-        let merged = merge(cli, &default_config());
+        let config = Config {
+            theme: ThemeConfig {
+                variant: Some("dark".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let merged = merge(cli, &config);
         assert!(merged.light);
+        assert!(!merged.dark);
+    }
+
+    #[test]
+    fn merge_variant_config_dark() {
+        let config = Config {
+            theme: ThemeConfig {
+                variant: Some("dark".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let merged = merge(CliOptions::default(), &config);
+        assert!(!merged.light);
+        assert!(merged.dark);
+    }
+
+    #[test]
+    fn merge_variant_config_light() {
+        let config = Config {
+            theme: ThemeConfig {
+                variant: Some("light".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let merged = merge(CliOptions::default(), &config);
+        assert!(merged.light);
+        assert!(!merged.dark);
+    }
+
+    #[test]
+    fn merge_variant_neither_set() {
+        let merged = merge(CliOptions::default(), &default_config());
+        assert!(!merged.light);
         assert!(!merged.dark);
     }
 
@@ -339,15 +409,32 @@ mod tests {
     }
 
     #[test]
-    fn merge_syntax_theme_cli_only() {
+    fn merge_syntax_theme_cli_wins() {
         let cli = CliOptions {
-            syntax_theme: Some(PathBuf::from("/path/to/theme.tmTheme")),
+            syntax_theme: Some(PathBuf::from("/cli/theme.tmTheme")),
             ..Default::default()
         };
-        let merged = merge(cli, &default_config());
+        let config = Config {
+            syntax_theme: Some(PathBuf::from("/config/theme.tmTheme")),
+            ..Default::default()
+        };
+        let merged = merge(cli, &config);
         assert_eq!(
             merged.syntax_theme,
-            Some(PathBuf::from("/path/to/theme.tmTheme"))
+            Some(PathBuf::from("/cli/theme.tmTheme"))
+        );
+    }
+
+    #[test]
+    fn merge_syntax_theme_config_fallback() {
+        let config = Config {
+            syntax_theme: Some(PathBuf::from("/config/theme.tmTheme")),
+            ..Default::default()
+        };
+        let merged = merge(CliOptions::default(), &config);
+        assert_eq!(
+            merged.syntax_theme,
+            Some(PathBuf::from("/config/theme.tmTheme"))
         );
     }
 
@@ -355,5 +442,51 @@ mod tests {
     fn merge_syntax_theme_none_by_default() {
         let merged = merge(CliOptions::default(), &default_config());
         assert!(merged.syntax_theme.is_none());
+    }
+
+    #[test]
+    fn merge_variant_unknown_treated_as_neither() {
+        let config = Config {
+            theme: ThemeConfig {
+                variant: Some("blue".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let merged = merge(CliOptions::default(), &config);
+        assert!(!merged.light);
+        assert!(!merged.dark);
+    }
+
+    #[test]
+    fn merge_variant_cli_dark_overrides_config_light() {
+        let cli = CliOptions {
+            dark: true,
+            ..Default::default()
+        };
+        let config = Config {
+            theme: ThemeConfig {
+                variant: Some("light".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let merged = merge(cli, &config);
+        assert!(!merged.light);
+        assert!(merged.dark);
+    }
+
+    #[test]
+    fn merge_reading_mode_both_true() {
+        let cli = CliOptions {
+            reading_mode: true,
+            ..Default::default()
+        };
+        let config = Config {
+            reading_mode: Some(true),
+            ..Default::default()
+        };
+        let merged = merge(cli, &config);
+        assert!(merged.reading_mode);
     }
 }
