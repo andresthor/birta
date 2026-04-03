@@ -4,11 +4,11 @@ version = "0.2.0"
 edition = "2024"
 description = "Preview markdown files in the browser with GitHub-style rendering"
 license = "MIT"
-repository = "https://github.com/andresthor/birta"
+repository = "https://github.com/hugvit/birta"
 readme = "README.md"
 keywords = ["markdown", "preview", "browser", "github", "live-reload"]
 categories = ["command-line-utilities", "text-processing"]
-homepage = "https://github.com/andresthor/birta"
+homepage = "https://github.com/hugvit/birta"
 
 [dependencies]
 anyhow = "1"
