@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/hugvit/birta/compare/v0.2.1...v0.3.0) - 2026-04-03
+
+### Added
+
+- add configurable keybindings with --bind flag
+- add reading_mode, syntax_theme, and variant to config
+
+### Other
+
+- extract merge logic and improve test coverage
+- update release-plz pr template
+
 ## [0.2.1](https://github.com/hugvit/birta/compare/v0.2.0...v0.2.1) - 2026-04-03
 
 ### Other
