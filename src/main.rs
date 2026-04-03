@@ -86,6 +86,10 @@ struct Cli {
     /// Disable the light/dark toggle
     #[arg(long, help_heading = "Display")]
     no_toggle: bool,
+
+    /// Override a keybinding (e.g. toggle_reading=Alt+r)
+    #[arg(long = "bind", value_name = "ACTION=KEY", help_heading = "Display")]
+    bind: Vec<String>,
 }
 
 #[tokio::main]
@@ -163,6 +167,10 @@ async fn main() -> anyhow::Result<()> {
     };
     let font_css = font_config.to_css();
 
+    let mut keybindings = config.keybindings.clone();
+    keybindings.apply_overrides(&cli.bind);
+    let keybindings_json = keybindings.to_json();
+
     if file.as_os_str() == "-" {
         let mut markdown = String::new();
         std::io::stdin().read_to_string(&mut markdown)?;
@@ -176,6 +184,7 @@ async fn main() -> anyhow::Result<()> {
             enable_toggle: merged.enable_toggle,
             show_header: merged.show_header,
             reading_mode: merged.reading_mode,
+            keybindings_json,
         };
         return birta::server::run_stdin(&markdown, opts).await;
     }
@@ -197,12 +206,15 @@ async fn main() -> anyhow::Result<()> {
     if cli.static_mode {
         return run_static(
             &file,
-            &theme,
-            custom_css.as_deref(),
-            font_css.as_deref(),
-            merged.show_header,
-            merged.reading_mode,
-            merged.no_open,
+            StaticOptions {
+                theme: &theme,
+                custom_css: custom_css.as_deref(),
+                font_css: font_css.as_deref(),
+                show_header: merged.show_header,
+                reading_mode: merged.reading_mode,
+                no_open: merged.no_open,
+                keybindings_json: &keybindings_json,
+            },
         );
     }
 
@@ -216,19 +228,22 @@ async fn main() -> anyhow::Result<()> {
         enable_toggle: merged.enable_toggle,
         show_header: merged.show_header,
         reading_mode: merged.reading_mode,
+        keybindings_json,
     };
     birta::server::run(file, opts).await
 }
 
-fn run_static(
-    file: &std::path::Path,
-    theme: &birta::theme::ResolvedTheme,
-    custom_css: Option<&str>,
-    font_css: Option<&str>,
+struct StaticOptions<'a> {
+    theme: &'a birta::theme::ResolvedTheme,
+    custom_css: Option<&'a str>,
+    font_css: Option<&'a str>,
     show_header: bool,
     reading_mode: bool,
     no_open: bool,
-) -> anyhow::Result<()> {
+    keybindings_json: &'a str,
+}
+
+fn run_static(file: &std::path::Path, opts: StaticOptions<'_>) -> anyhow::Result<()> {
     let markdown = std::fs::read_to_string(file)?;
     let base_dir = file
         .parent()
@@ -241,8 +256,11 @@ fn run_static(
         })
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
 
-    let content_html =
-        birta::render::render_static(&markdown, theme.active_data().syntax.as_ref(), &base_dir);
+    let content_html = birta::render::render_static(
+        &markdown,
+        opts.theme.active_data().syntax.as_ref(),
+        &base_dir,
+    );
 
     let page = birta::template::render_page(&birta::template::PageOptions {
         filename: &file
@@ -250,13 +268,14 @@ fn run_static(
             .map(|n| n.to_string_lossy().into_owned())
             .unwrap_or_else(|| "untitled".to_string()),
         content_html: &content_html,
-        custom_css,
-        font_css,
-        show_header,
-        reading_mode,
-        theme,
+        custom_css: opts.custom_css,
+        font_css: opts.font_css,
+        show_header: opts.show_header,
+        reading_mode: opts.reading_mode,
+        theme: opts.theme,
         theme_names: &[],
         static_mode: true,
+        keybindings_json: opts.keybindings_json,
     });
 
     let filename = file
@@ -268,7 +287,9 @@ fn run_static(
 
     eprintln!("birta: wrote {}", out_path.display());
 
-    if !no_open && let Err(e) = open::that(&out_path) {
+    if !opts.no_open
+        && let Err(e) = open::that(&out_path)
+    {
         eprintln!("birta: failed to open browser: {e}");
     }
 
