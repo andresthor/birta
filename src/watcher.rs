@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -7,14 +8,13 @@ use tokio::sync::broadcast;
 use crate::render;
 use crate::server::AppState;
 
-pub(crate) fn watch(
-    path: PathBuf,
-    tx: broadcast::Sender<String>,
+/// Watch a directory recursively and broadcast rendered HTML for changed `.md` files.
+pub(crate) fn watch_dir(
+    base_dir: PathBuf,
+    tx: broadcast::Sender<(String, String)>,
     state: Arc<AppState>,
 ) -> anyhow::Result<notify_debouncer_mini::Debouncer<notify::RecommendedWatcher>> {
-    let canonical = path.canonicalize()?;
-    let watch_dir = canonical.parent().map(|p| p.to_path_buf());
-
+    let canonical_base = base_dir.canonicalize()?;
     let rt = tokio::runtime::Handle::current();
 
     let mut debouncer = new_debouncer(
@@ -28,41 +28,67 @@ pub(crate) fn watch(
                 }
             };
 
-            let dominated = events.iter().any(|e| {
-                e.kind == DebouncedEventKind::Any
-                    && e.path
-                        .canonicalize()
-                        .map(|p| p == canonical)
-                        .unwrap_or(false)
-            });
+            // Collect unique .md files that changed
+            let mut changed: HashSet<PathBuf> = HashSet::new();
+            for event in &events {
+                if event.kind != DebouncedEventKind::Any {
+                    continue;
+                }
+                let Ok(path) = event.path.canonicalize() else {
+                    continue;
+                };
+                if !path.starts_with(&canonical_base) {
+                    continue;
+                }
+                match path.extension().and_then(|e| e.to_str()) {
+                    Some("md" | "markdown") => {
+                        changed.insert(path);
+                    }
+                    _ => continue,
+                }
+            }
 
-            if !dominated {
+            if changed.is_empty() {
                 return;
             }
 
-            let markdown = match std::fs::read_to_string(&canonical) {
-                Ok(s) => s,
-                Err(e) => {
-                    eprintln!("birta: could not read file: {e}");
-                    return;
-                }
-            };
-
-            // Read current syntax theme from the registry
             let syntax_theme = rt.block_on(async {
                 let reg = state.registry.read().await;
                 reg.active().active_data().syntax.clone()
             });
 
-            let html = render::render(&markdown, syntax_theme.as_ref());
-            let _ = tx.send(html);
+            for path in changed {
+                let relpath = path
+                    .strip_prefix(&canonical_base)
+                    .unwrap_or(&path)
+                    .to_string_lossy()
+                    .into_owned();
+
+                let markdown = match std::fs::read_to_string(&path) {
+                    Ok(s) => s,
+                    Err(e) => {
+                        eprintln!("birta: could not read {relpath}: {e}");
+                        continue;
+                    }
+                };
+
+                let html = render::render_dir(
+                    &markdown,
+                    syntax_theme.as_ref(),
+                    std::path::Path::new(&relpath),
+                );
+                let _ = tx.send((relpath, html));
+            }
         },
     )?;
 
-    let dir = watch_dir.as_deref().unwrap_or(path.as_ref());
-    debouncer
+    if let Err(e) = debouncer
         .watcher()
-        .watch(dir, notify::RecursiveMode::NonRecursive)?;
+        .watch(&base_dir, notify::RecursiveMode::Recursive)
+    {
+        eprintln!("birta: warning: directory watch failed: {e}");
+        eprintln!("birta: hint: on Linux, try increasing fs.inotify.max_user_watches");
+    }
 
     Ok(debouncer)
 }

@@ -2,6 +2,7 @@ use std::io::Write;
 use std::time::Duration;
 
 use futures_util::StreamExt;
+use tempfile::Builder as TempBuilder;
 use tempfile::NamedTempFile;
 use tokio::time::timeout;
 use tokio_tungstenite::connect_async;
@@ -49,7 +50,7 @@ async fn start_server(tmpfile: &NamedTempFile) -> u16 {
 
 #[tokio::test]
 async fn ws_sends_initial_html_on_connect() {
-    let mut tmpfile = NamedTempFile::new().unwrap();
+    let mut tmpfile = TempBuilder::new().suffix(".md").tempfile().unwrap();
     write!(tmpfile, "# Initial").unwrap();
     tmpfile.flush().unwrap();
 
@@ -79,7 +80,7 @@ async fn ws_sends_initial_html_on_connect() {
 
 #[tokio::test]
 async fn ws_sends_update_on_file_change() {
-    let mut tmpfile = NamedTempFile::new().unwrap();
+    let mut tmpfile = TempBuilder::new().suffix(".md").tempfile().unwrap();
     write!(tmpfile, "# Before").unwrap();
     tmpfile.flush().unwrap();
 

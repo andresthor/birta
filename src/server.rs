@@ -1,14 +1,14 @@
 use std::net::SocketAddr;
-use std::path::PathBuf;
+use std::path::{Path as StdPath, PathBuf};
 use std::sync::Arc;
-use std::sync::atomic::{AtomicUsize, Ordering};
-use std::time::Duration;
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use axum::Router;
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::extract::{Path, State};
 use axum::http::{StatusCode, header};
-use axum::response::{Html, IntoResponse, Response};
+use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum::routing::{get, post};
 use tokio::net::TcpListener;
 use tokio::sync::{Notify, RwLock, broadcast};
@@ -37,11 +37,13 @@ pub(crate) struct AppState {
     pub(crate) base_dir: PathBuf,
     pub(crate) source_file: Option<PathBuf>,
     pub(crate) filename: String,
+    /// Relative path of the initial file from base_dir (e.g. "README.md").
+    pub(crate) initial_relpath: Option<String>,
     pub(crate) custom_css: Option<String>,
     /// Raw rendered HTML (not JSON-wrapped).
     pub(crate) current_html: RwLock<String>,
-    /// Sends raw HTML content updates (from watcher file changes).
-    pub(crate) tx: broadcast::Sender<String>,
+    /// Sends `(relative_path, rendered_html)` content updates from watcher.
+    pub(crate) tx: broadcast::Sender<(String, String)>,
     /// Sends ready-to-send JSON strings (theme_update messages).
     pub(crate) theme_tx: broadcast::Sender<String>,
     pub(crate) scroll_tx: broadcast::Sender<u32>,
@@ -53,6 +55,8 @@ pub(crate) struct AppState {
     pub(crate) show_header: bool,
     pub(crate) reading_mode: bool,
     pub(crate) keybindings_json: String,
+    /// Epoch seconds of the last HTTP request (prevents premature auto-shutdown).
+    pub(crate) last_request: AtomicU64,
 }
 
 pub async fn run(file: PathBuf, opts: ServerOptions) -> anyhow::Result<()> {
@@ -100,7 +104,7 @@ pub async fn run_stdin(markdown: &str, opts: ServerOptions) -> anyhow::Result<()
     }
     let base_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
 
-    let (tx, _rx) = broadcast::channel::<String>(16);
+    let (tx, _rx) = broadcast::channel::<(String, String)>(16);
     let (theme_tx, _) = broadcast::channel::<String>(16);
     let (scroll_tx, _) = broadcast::channel::<u32>(16);
 
@@ -108,6 +112,7 @@ pub async fn run_stdin(markdown: &str, opts: ServerOptions) -> anyhow::Result<()
         base_dir,
         source_file: None,
         filename: "stdin".to_string(),
+        initial_relpath: None,
         custom_css: opts.custom_css,
         current_html: RwLock::new(content_html),
         tx,
@@ -121,6 +126,7 @@ pub async fn run_stdin(markdown: &str, opts: ServerOptions) -> anyhow::Result<()
         show_header: opts.show_header,
         reading_mode: opts.reading_mode,
         keybindings_json: opts.keybindings_json,
+        last_request: AtomicU64::new(now_secs()),
     });
 
     let app = router(state.clone());
@@ -138,7 +144,26 @@ pub async fn start(
     opts: ServerOptions,
 ) -> anyhow::Result<()> {
     let markdown = std::fs::read_to_string(&file)?;
-    let content_html = render::render(&markdown, opts.theme.active_data().syntax.as_ref());
+
+    let canonical_file = file.canonicalize()?;
+    let base_dir = canonical_file
+        .parent()
+        .map(|p| p.to_path_buf())
+        .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+    let initial_relpath = canonical_file
+        .strip_prefix(&base_dir)
+        .ok()
+        .map(|p| p.to_string_lossy().into_owned());
+
+    let content_html = if let Some(ref relpath) = initial_relpath {
+        render::render_dir(
+            &markdown,
+            opts.theme.active_data().syntax.as_ref(),
+            StdPath::new(relpath),
+        )
+    } else {
+        render::render(&markdown, opts.theme.active_data().syntax.as_ref())
+    };
 
     let filename = file
         .file_name()
@@ -150,19 +175,20 @@ pub async fn start(
         registry.discover_all();
     }
 
-    let base_dir = file
-        .parent()
-        .map(|p| p.to_path_buf())
-        .unwrap_or_else(|| PathBuf::from("."));
-
-    let (tx, _rx) = broadcast::channel::<String>(16);
+    let (tx, _rx) = broadcast::channel::<(String, String)>(16);
     let (theme_tx, _) = broadcast::channel::<String>(16);
     let (scroll_tx, _) = broadcast::channel::<u32>(16);
 
+    let now_secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+
     let state = Arc::new(AppState {
         base_dir,
-        source_file: Some(file.clone()),
+        source_file: Some(canonical_file),
         filename,
+        initial_relpath,
         custom_css: opts.custom_css,
         current_html: RwLock::new(content_html),
         tx: tx.clone(),
@@ -176,18 +202,21 @@ pub async fn start(
         show_header: opts.show_header,
         reading_mode: opts.reading_mode,
         keybindings_json: opts.keybindings_json,
+        last_request: AtomicU64::new(now_secs),
     });
 
     let state_for_task = Arc::clone(&state);
     let mut rx = tx.subscribe();
     tokio::spawn(async move {
-        while let Ok(html) = rx.recv().await {
-            *state_for_task.current_html.write().await = html;
+        while let Ok((relpath, html)) = rx.recv().await {
+            if state_for_task.initial_relpath.as_deref() == Some(&relpath) {
+                *state_for_task.current_html.write().await = html;
+            }
         }
     });
 
     let state_for_watcher = Arc::clone(&state);
-    let _debouncer = watcher::watch(file, tx, state_for_watcher)?;
+    let _debouncer = watcher::watch_dir(state.base_dir.clone(), tx, state_for_watcher)?;
 
     let app = router(state.clone());
     axum::serve(listener, app)
@@ -216,7 +245,10 @@ async fn shutdown_signal(state: Arc<AppState>) {
 
         tokio::time::sleep(SHUTDOWN_GRACE_PERIOD).await;
 
-        if state.connections.load(Ordering::Relaxed) == 0 {
+        if state.connections.load(Ordering::Relaxed) == 0
+            && now_secs().saturating_sub(state.last_request.load(Ordering::Relaxed))
+                >= SHUTDOWN_GRACE_PERIOD.as_secs()
+        {
             eprintln!("birta: all tabs closed, shutting down...");
         } else {
             Box::pin(auto_shutdown_loop(state)).await;
@@ -239,7 +271,10 @@ async fn auto_shutdown_loop(state: Arc<AppState>) {
 
         tokio::time::sleep(SHUTDOWN_GRACE_PERIOD).await;
 
-        if state.connections.load(Ordering::Relaxed) == 0 {
+        if state.connections.load(Ordering::Relaxed) == 0
+            && now_secs().saturating_sub(state.last_request.load(Ordering::Relaxed))
+                >= SHUTDOWN_GRACE_PERIOD.as_secs()
+        {
             eprintln!("birta: all tabs closed, shutting down...");
             return;
         }
@@ -249,6 +284,8 @@ async fn auto_shutdown_loop(state: Arc<AppState>) {
 fn router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/", get(index_handler))
+        .route("/view/{*path}", get(view_handler))
+        .route("/render/{*path}", get(render_handler))
         .route("/health", get(|| async { "ok" }))
         .route("/ws", get(ws_handler))
         .route("/scroll/{line}", post(scroll_handler))
@@ -262,7 +299,12 @@ async fn favicon_handler() -> Response {
     ([(header::CONTENT_TYPE, "image/png")], FAVICON).into_response()
 }
 
-async fn index_handler(State(state): State<Arc<AppState>>) -> Html<String> {
+async fn index_handler(State(state): State<Arc<AppState>>) -> Response {
+    if let Some(relpath) = &state.initial_relpath {
+        return Redirect::temporary(&format!("/view/{relpath}")).into_response();
+    }
+
+    // stdin mode — render inline
     let registry = state.registry.read().await;
     let theme = registry.active();
     let theme_names: Vec<&str> = registry.theme_names();
@@ -278,13 +320,110 @@ async fn index_handler(State(state): State<Arc<AppState>>) -> Html<String> {
         theme_names: &theme_names,
         static_mode: false,
         keybindings_json: &state.keybindings_json,
+        current_path: None,
     });
-    Html(page)
+    Html(page).into_response()
 }
 
 async fn scroll_handler(Path(line): Path<u32>, State(state): State<Arc<AppState>>) -> StatusCode {
     let _ = state.scroll_tx.send(line);
     StatusCode::NO_CONTENT
+}
+
+/// Canonicalize a relative path and verify it stays within `base_dir`.
+async fn resolve_safe_path(base_dir: &StdPath, relative: &str) -> Result<PathBuf, StatusCode> {
+    let joined = base_dir.join(relative);
+    let canonical = tokio::fs::canonicalize(&joined)
+        .await
+        .map_err(|_| StatusCode::NOT_FOUND)?;
+    if !canonical.starts_with(base_dir) {
+        return Err(StatusCode::FORBIDDEN);
+    }
+    Ok(canonical)
+}
+
+fn now_secs() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs()
+}
+
+/// Render and serve a markdown file from the served directory.
+async fn view_handler(Path(path): Path<String>, State(state): State<Arc<AppState>>) -> Response {
+    state.last_request.store(now_secs(), Ordering::Relaxed);
+
+    let canonical = match resolve_safe_path(&state.base_dir, &path).await {
+        Ok(p) => p,
+        Err(status) => return status.into_response(),
+    };
+
+    match canonical.extension().and_then(|e| e.to_str()) {
+        Some("md" | "markdown") => {}
+        _ => return (StatusCode::BAD_REQUEST, "not a markdown file").into_response(),
+    }
+
+    let markdown = match tokio::fs::read_to_string(&canonical).await {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::NOT_FOUND, "could not read file").into_response(),
+    };
+
+    let syntax_theme = {
+        let reg = state.registry.read().await;
+        reg.active().active_data().syntax.clone()
+    };
+
+    let html = render::render_dir(&markdown, syntax_theme.as_ref(), StdPath::new(&path));
+
+    let filename = canonical
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "untitled".to_string());
+
+    let registry = state.registry.read().await;
+    let theme = registry.active();
+    let theme_names: Vec<&str> = registry.theme_names();
+    let page = template::render_page(&template::PageOptions {
+        filename: &filename,
+        content_html: &html,
+        custom_css: state.custom_css.as_deref(),
+        font_css: state.font_css.as_deref(),
+        show_header: state.show_header,
+        reading_mode: state.reading_mode,
+        theme,
+        theme_names: &theme_names,
+        static_mode: false,
+        keybindings_json: &state.keybindings_json,
+        current_path: Some(&path),
+    });
+    Html(page).into_response()
+}
+
+/// Return just the rendered HTML fragment for a markdown file (no page chrome).
+/// Used by the client to re-render content after theme changes.
+async fn render_handler(Path(path): Path<String>, State(state): State<Arc<AppState>>) -> Response {
+    let canonical = match resolve_safe_path(&state.base_dir, &path).await {
+        Ok(p) => p,
+        Err(status) => return status.into_response(),
+    };
+
+    match canonical.extension().and_then(|e| e.to_str()) {
+        Some("md" | "markdown") => {}
+        _ => return (StatusCode::BAD_REQUEST, "not a markdown file").into_response(),
+    }
+
+    let markdown = match tokio::fs::read_to_string(&canonical).await {
+        Ok(s) => s,
+        Err(_) => return (StatusCode::NOT_FOUND, "could not read file").into_response(),
+    };
+
+    let syntax_theme = {
+        let reg = state.registry.read().await;
+        reg.active().active_data().syntax.clone()
+    };
+
+    let html = render::render_dir(&markdown, syntax_theme.as_ref(), StdPath::new(&path));
+    Html(html).into_response()
 }
 
 /// Handle incoming WebSocket JSON messages from the browser.
@@ -301,7 +440,8 @@ async fn handle_ws_message(text: &str, state: &AppState) {
                 .get("checked")
                 .and_then(|c| c.as_bool())
                 .unwrap_or(false);
-            if let Err(e) = toggle_checkbox(state, line, checked) {
+            let relpath = msg.get("path").and_then(|p| p.as_str()).unwrap_or("");
+            if let Err(e) = toggle_checkbox(state, line, checked, relpath) {
                 eprintln!("birta: checkbox toggle failed: {e}");
             }
         }
@@ -330,7 +470,13 @@ async fn broadcast_theme_update(state: &AppState) {
     // Re-render markdown with new syntax theme
     let html = if let Some(source_file) = &state.source_file {
         match std::fs::read_to_string(source_file) {
-            Ok(markdown) => render::render(&markdown, active.syntax.as_ref()),
+            Ok(markdown) => {
+                if let Some(relpath) = &state.initial_relpath {
+                    render::render_dir(&markdown, active.syntax.as_ref(), StdPath::new(relpath))
+                } else {
+                    render::render(&markdown, active.syntax.as_ref())
+                }
+            }
             Err(e) => {
                 eprintln!("birta: failed to re-read file for theme change: {e}");
                 return;
@@ -353,6 +499,7 @@ async fn broadcast_theme_update(state: &AppState) {
         "type": "theme_update",
         "css_vars": css_vars,
         "html": html,
+        "path": state.initial_relpath.as_deref().unwrap_or(""),
         "theme_name": theme.name,
         "theme_attr": theme_attr,
         "variants": theme.variant_names(),
@@ -383,12 +530,29 @@ async fn handle_variant_change(state: &AppState, variant: Variant) {
     broadcast_theme_update(state).await;
 }
 
-/// Toggle a checkbox in the source file at the given line.
-fn toggle_checkbox(state: &AppState, line: usize, checked: bool) -> anyhow::Result<()> {
-    let path = state
-        .source_file
-        .as_ref()
-        .ok_or_else(|| anyhow::anyhow!("no source file (stdin mode)"))?;
+/// Toggle a checkbox in a source file at the given line.
+fn toggle_checkbox(
+    state: &AppState,
+    line: usize,
+    checked: bool,
+    relpath: &str,
+) -> anyhow::Result<()> {
+    let path = if !relpath.is_empty() {
+        let joined = state.base_dir.join(relpath);
+        let canonical = joined
+            .canonicalize()
+            .map_err(|e| anyhow::anyhow!("invalid path: {e}"))?;
+        if !canonical.starts_with(&state.base_dir) {
+            anyhow::bail!("path traversal not allowed");
+        }
+        canonical
+    } else {
+        state
+            .source_file
+            .clone()
+            .ok_or_else(|| anyhow::anyhow!("no source file (stdin mode)"))?
+    };
+    let path = &path;
 
     let content = std::fs::read_to_string(path)?;
     let mut lines: Vec<&str> = content.lines().collect();
@@ -423,11 +587,10 @@ async fn local_file_handler(
     Path(path): Path<String>,
     State(state): State<Arc<AppState>>,
 ) -> Response {
-    if path.contains("..") {
-        return (StatusCode::BAD_REQUEST, "path traversal not allowed").into_response();
-    }
-
-    let file_path = state.base_dir.join(&path);
+    let file_path = match resolve_safe_path(&state.base_dir, &path).await {
+        Ok(p) => p,
+        Err(status) => return status.into_response(),
+    };
 
     let content = match tokio::fs::read(&file_path).await {
         Ok(bytes) => bytes,
@@ -459,6 +622,7 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
     let init_msg = serde_json::json!({
         "type": "content",
         "html": current,
+        "path": state.initial_relpath.as_deref().unwrap_or(""),
     });
     if socket
         .send(Message::Text(init_msg.to_string().into()))
@@ -478,9 +642,8 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
         tokio::select! {
             result = rx.recv() => {
                 match result {
-                    Ok(html) => {
-                        // tx carries raw HTML — wrap in JSON content message
-                        let msg = serde_json::json!({"type": "content", "html": html});
+                    Ok((relpath, html)) => {
+                        let msg = serde_json::json!({"type": "content", "html": html, "path": relpath});
                         if socket.send(Message::Text(msg.to_string().into())).await.is_err() {
                             break;
                         }
@@ -559,6 +722,7 @@ mod tests {
             base_dir: PathBuf::from("."),
             source_file: None,
             filename: "test.md".to_string(),
+            initial_relpath: None,
             custom_css: None,
             current_html: RwLock::new("<p>hello</p>".to_string()),
             tx,
@@ -572,6 +736,7 @@ mod tests {
             show_header: true,
             reading_mode: false,
             keybindings_json: "{}".to_string(),
+            last_request: AtomicU64::new(0),
         })
     }
 
@@ -635,6 +800,7 @@ mod tests {
             base_dir,
             source_file: None,
             filename: "test.md".to_string(),
+            initial_relpath: None,
             custom_css: None,
             current_html: RwLock::new("<p>hello</p>".to_string()),
             tx,
@@ -648,6 +814,7 @@ mod tests {
             show_header: true,
             reading_mode: false,
             keybindings_json: "{}".to_string(),
+            last_request: AtomicU64::new(0),
         });
         router(state)
     }
@@ -657,7 +824,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(dir.path().join("photo.png"), b"\x89PNG\r\n\x1a\nfake").unwrap();
 
-        let app = test_router_with_base_dir(dir.path().to_path_buf());
+        let app = test_router_with_base_dir(dir.path().canonicalize().unwrap());
 
         let response = app
             .oneshot(
@@ -676,7 +843,7 @@ mod tests {
     #[tokio::test]
     async fn local_file_rejects_path_traversal() {
         let dir = tempfile::tempdir().unwrap();
-        let app = test_router_with_base_dir(dir.path().to_path_buf());
+        let app = test_router_with_base_dir(dir.path().canonicalize().unwrap());
 
         let response = app
             .oneshot(
@@ -688,13 +855,18 @@ mod tests {
             .await
             .unwrap();
 
-        assert_eq!(response.status(), 400);
+        // canonicalize fails for nonexistent traversal paths → 404
+        let status = response.status().as_u16();
+        assert!(
+            status == 403 || status == 404,
+            "path traversal should be blocked, got {status}"
+        );
     }
 
     #[tokio::test]
     async fn local_file_returns_404_for_missing() {
         let dir = tempfile::tempdir().unwrap();
-        let app = test_router_with_base_dir(dir.path().to_path_buf());
+        let app = test_router_with_base_dir(dir.path().canonicalize().unwrap());
 
         let response = app
             .oneshot(
@@ -707,5 +879,112 @@ mod tests {
             .unwrap();
 
         assert_eq!(response.status(), 404);
+    }
+
+    #[tokio::test]
+    async fn view_handler_renders_md() {
+        let dir = tempfile::tempdir().unwrap();
+        let dir_path = dir.path().canonicalize().unwrap();
+        std::fs::write(dir_path.join("test.md"), "# Hello").unwrap();
+
+        let app = test_router_with_base_dir(dir_path);
+
+        let response = app
+            .oneshot(
+                axum::http::Request::builder()
+                    .uri("/view/test.md")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), 200);
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let html = String::from_utf8(body.to_vec()).unwrap();
+        assert!(html.contains("Hello"), "should contain rendered content");
+    }
+
+    #[tokio::test]
+    async fn view_handler_rejects_non_md() {
+        let dir = tempfile::tempdir().unwrap();
+        let dir_path = dir.path().canonicalize().unwrap();
+        std::fs::write(dir_path.join("photo.png"), b"fake").unwrap();
+
+        let app = test_router_with_base_dir(dir_path);
+
+        let response = app
+            .oneshot(
+                axum::http::Request::builder()
+                    .uri("/view/photo.png")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), 400);
+    }
+
+    #[tokio::test]
+    async fn view_handler_returns_404_for_missing() {
+        let dir = tempfile::tempdir().unwrap();
+        let dir_path = dir.path().canonicalize().unwrap();
+        let app = test_router_with_base_dir(dir_path);
+
+        let response = app
+            .oneshot(
+                axum::http::Request::builder()
+                    .uri("/view/nonexistent.md")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), 404);
+    }
+
+    #[tokio::test]
+    async fn index_redirects_when_initial_relpath_set() {
+        let theme = github_theme();
+        let registry = ThemeRegistry::new(theme);
+        let (tx, _rx) = broadcast::channel(16);
+        let (theme_tx, _) = broadcast::channel(16);
+        let (scroll_tx, _) = broadcast::channel(16);
+        let state = Arc::new(AppState {
+            base_dir: PathBuf::from("."),
+            source_file: None,
+            filename: "test.md".to_string(),
+            initial_relpath: Some("test.md".to_string()),
+            custom_css: None,
+            current_html: RwLock::new("<p>hello</p>".to_string()),
+            tx,
+            theme_tx,
+            scroll_tx,
+            connections: AtomicUsize::new(0),
+            all_disconnected: Notify::new(),
+            registry: RwLock::new(registry),
+            enable_toggle: true,
+            font_css: None,
+            show_header: true,
+            reading_mode: false,
+            keybindings_json: "{}".to_string(),
+            last_request: AtomicU64::new(0),
+        });
+        let app = router(state);
+
+        let response = app
+            .oneshot(
+                axum::http::Request::builder()
+                    .uri("/")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), 307);
+        assert_eq!(response.headers()["location"], "/view/test.md");
     }
 }

@@ -76,6 +76,7 @@
     var activeVariant = '{{ACTIVE_VARIANT}}';
     var variants = {{VARIANTS_JSON}};
     var KEYBINDINGS = {{KEYBINDINGS_JSON}};
+    var CURRENT_PATH = '{{CURRENT_PATH}}';
 
     var html = document.documentElement;
     var mdBody = document.getElementById('content');
@@ -92,13 +93,19 @@
     var readingExitZone = document.getElementById('reading-exit-zone');
     var readingExitBar = document.getElementById('reading-exit-bar');
     var readingExitBtn = document.getElementById('reading-exit-btn');
-    var isReadingMode = document.body.classList.contains('reading-mode');
+    var storedReading = null;
+    try { storedReading = sessionStorage.getItem('birta-reading-mode'); } catch(e) {}
+    var isReadingMode = storedReading !== null
+      ? storedReading === '1'
+      : document.body.classList.contains('reading-mode');
+    if (isReadingMode) document.body.classList.add('reading-mode');
 
     function toggleReadingMode(force) {
       isReadingMode = typeof force === 'boolean' ? force : !isReadingMode;
       document.body.classList.toggle('reading-mode', isReadingMode);
       readingProgress.style.display = isReadingMode ? 'block' : 'none';
       readingExitZone.style.display = isReadingMode ? 'block' : 'none';
+      try { sessionStorage.setItem('birta-reading-mode', isReadingMode ? '1' : '0'); } catch(e) {}
       if (isReadingMode) updateProgress();
     }
 
@@ -178,6 +185,7 @@
       html.setAttribute('data-theme', variant);
       mdBody.setAttribute('data-theme', variant);
       updateToggleIcon();
+      try { sessionStorage.setItem('birta-variant', variant); } catch(e) {}
     }
 
     function updateToggleIcon() {
@@ -202,8 +210,13 @@
         themeSelect.style.display = 'none';
       }
 
-      // Respect OS light/dark preference for dual-variant themes
-      if (THEME_MODE === 'toggle' && window.matchMedia) {
+      // Restore variant from session (persists across navigation), fall back
+      // to OS preference for dual-variant themes, then to server-rendered value.
+      var storedVariant = null;
+      try { storedVariant = sessionStorage.getItem('birta-variant'); } catch(e) {}
+      if (storedVariant === 'dark' || storedVariant === 'light') {
+        activeVariant = storedVariant;
+      } else if (THEME_MODE === 'toggle' && window.matchMedia) {
         var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         activeVariant = prefersDark ? 'dark' : 'light';
       }
@@ -300,7 +313,7 @@
           if (!li || !currentWs || currentWs.readyState !== WebSocket.OPEN) return;
           var line = parseInt(li.getAttribute('data-sourcepos'), 10);
           currentWs.send(JSON.stringify({
-            type: 'checkbox', line: line, checked: e.target.checked
+            type: 'checkbox', line: line, checked: e.target.checked, path: CURRENT_PATH
           }));
         });
       });
@@ -340,6 +353,7 @@
 
           switch (msg.type) {
             case 'content':
+              if (msg.path && CURRENT_PATH && msg.path !== CURRENT_PATH) break;
               mdBody.innerHTML = msg.html;
               renderMath();
               renderMermaid();
@@ -362,13 +376,27 @@
               applyVariant(activeVariant);
               updateToggleVisibility();
               updateThemeSelect(msg.theme_name);
-              // Update content HTML (re-rendered with new syntax theme)
-              mdBody.innerHTML = msg.html;
-              renderMath();
-              // Re-init mermaid with correct theme
-              mermaidReady = false;
-              renderMermaid();
-              enableCheckboxes();
+              // Re-render content with new syntax theme
+              if (CURRENT_PATH && msg.path !== CURRENT_PATH) {
+                // Viewing a different file — fetch fresh render
+                fetch('/render/' + CURRENT_PATH).then(function(r) {
+                  if (!r.ok) return;
+                  return r.text();
+                }).then(function(freshHtml) {
+                  if (!freshHtml) return;
+                  mdBody.innerHTML = freshHtml;
+                  renderMath();
+                  mermaidReady = false;
+                  renderMermaid();
+                  enableCheckboxes();
+                });
+              } else {
+                mdBody.innerHTML = msg.html;
+                renderMath();
+                mermaidReady = false;
+                renderMermaid();
+                enableCheckboxes();
+              }
               break;
 
             case 'scroll':

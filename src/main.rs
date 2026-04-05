@@ -276,6 +276,7 @@ fn run_static(file: &std::path::Path, opts: StaticOptions<'_>) -> anyhow::Result
         theme_names: &[],
         static_mode: true,
         keybindings_json: opts.keybindings_json,
+        current_path: None,
     });
 
     let filename = file

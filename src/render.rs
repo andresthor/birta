@@ -8,21 +8,51 @@ use comrak::{Arena, Options, format_html_with_plugins, options, parse_document};
 use crate::highlight;
 use crate::theme::SyntaxTheme;
 
-/// Strategy for rewriting relative image URLs.
+/// Strategy for rewriting relative URLs (images and links).
 #[derive(Clone)]
 enum RewriteMode {
-    /// Rewrite to `/local/{path}` for the server to serve.
+    /// Rewrite images to `/local/{path}`. No link rewriting.
     Server,
-    /// Rewrite to `file:///{base_dir}/{path}` for self-contained HTML.
+    /// Rewrite images to `file:///{base_dir}/{path}`. No link rewriting.
     Static(PathBuf),
+    /// Rewrite images to `/local/{dir}/{path}` and `.md` links to `/view/{dir}/{path}`.
+    /// `file_dir` is the directory of the current file relative to `base_dir`.
+    Directory { file_dir: PathBuf },
 }
 
 impl RewriteMode {
-    fn rewrite(&self, url: &str) -> String {
+    fn rewrite_image(&self, url: &str) -> String {
         let clean = url.strip_prefix("./").unwrap_or(url);
         match self {
             RewriteMode::Server => format!("/local/{clean}"),
             RewriteMode::Static(base) => format!("file://{}", base.join(clean).display()),
+            RewriteMode::Directory { file_dir } => {
+                let resolved = file_dir.join(clean);
+                let normalized = normalize_path(&resolved);
+                format!("/local/{}", normalized.display())
+            }
+        }
+    }
+
+    fn rewrite_link(&self, url: &str) -> String {
+        if !should_rewrite_link(url) {
+            return url.to_string();
+        }
+
+        let clean = url.strip_prefix("./").unwrap_or(url);
+        let (path_part, fragment) = split_fragment(clean);
+
+        match self {
+            RewriteMode::Server | RewriteMode::Static(_) => url.to_string(),
+            RewriteMode::Directory { file_dir } => {
+                if path_part.ends_with(".md") || path_part.ends_with(".markdown") {
+                    let resolved = file_dir.join(path_part);
+                    let normalized = normalize_path(&resolved);
+                    format!("/view/{}{fragment}", normalized.display())
+                } else {
+                    url.to_string()
+                }
+            }
         }
     }
 }
@@ -30,6 +60,18 @@ impl RewriteMode {
 /// Render markdown to HTML, rewriting relative image paths to `/local/` server URLs.
 pub fn render(markdown: &str, syntax_theme: Option<&SyntaxTheme>) -> String {
     render_with_mode(markdown, syntax_theme, RewriteMode::Server)
+}
+
+/// Render markdown to HTML with directory navigation support.
+/// Rewrites relative `.md` links to `/view/` routes and images to `/local/` routes,
+/// resolving paths relative to the current file's directory.
+pub fn render_dir(
+    markdown: &str,
+    syntax_theme: Option<&SyntaxTheme>,
+    file_relpath: &Path,
+) -> String {
+    let file_dir = file_relpath.parent().unwrap_or(Path::new("")).to_path_buf();
+    render_with_mode(markdown, syntax_theme, RewriteMode::Directory { file_dir })
 }
 
 /// Render markdown to HTML, rewriting relative image paths to absolute `file:///` URLs.
@@ -113,14 +155,21 @@ fn options(mode: &RewriteMode) -> Options<'static> {
     options.extension.math_code = true;
 
     // Rewrite relative image paths using the selected strategy
-    let mode = mode.clone();
+    let img_mode = mode.clone();
     options.extension.image_url_rewriter = Some(Arc::new(move |url: &str| {
         if should_rewrite(url) {
-            mode.rewrite(url)
+            img_mode.rewrite_image(url)
         } else {
             url.to_string()
         }
     }));
+
+    // Rewrite relative link hrefs for directory navigation
+    if matches!(mode, RewriteMode::Directory { .. }) {
+        let link_mode = mode.clone();
+        options.extension.link_url_rewriter =
+            Some(Arc::new(move |url: &str| link_mode.rewrite_link(url)));
+    }
 
     // Parsing
     options.parse.smart = true;
@@ -153,7 +202,7 @@ fn rewrite_html_img_srcs(html: &str, mode: &RewriteMode) -> String {
         if let Some(end) = after_src.find('"') {
             let url = &after_src[..end];
             if should_rewrite(url) {
-                let rewritten = mode.rewrite(url);
+                let rewritten = mode.rewrite_image(url);
                 result.push_str(&format!("src=\"{rewritten}\""));
             } else {
                 result.push_str(&format!("src=\"{url}\""));
@@ -169,6 +218,34 @@ fn rewrite_html_img_srcs(html: &str, mode: &RewriteMode) -> String {
     result
 }
 
+fn should_rewrite_link(url: &str) -> bool {
+    should_rewrite(url) && !url.starts_with("mailto:") && !url.starts_with("tel:")
+}
+
+/// Split a URL at the first `#` or `?` into (path, fragment_with_delimiter).
+fn split_fragment(url: &str) -> (&str, &str) {
+    url.find(['#', '?'])
+        .map(|pos| (&url[..pos], &url[pos..]))
+        .unwrap_or((url, ""))
+}
+
+/// Normalize a relative path by collapsing `.` and `..` segments without filesystem access.
+fn normalize_path(path: &Path) -> PathBuf {
+    use std::path::Component;
+    let mut parts: Vec<&std::ffi::OsStr> = Vec::new();
+    for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                parts.pop();
+            }
+            Component::Normal(seg) => parts.push(seg),
+            _ => {}
+        }
+    }
+    parts.iter().collect()
+}
+
 fn html_escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
@@ -181,4 +258,120 @@ fn html_escape(s: &str) -> String {
         }
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn normalize_path_collapses_parent() {
+        assert_eq!(normalize_path(Path::new("a/b/../c")), PathBuf::from("a/c"));
+    }
+
+    #[test]
+    fn normalize_path_collapses_multiple_parents() {
+        assert_eq!(normalize_path(Path::new("a/b/../../c")), PathBuf::from("c"));
+    }
+
+    #[test]
+    fn normalize_path_strips_current_dir() {
+        assert_eq!(normalize_path(Path::new("./a/./b")), PathBuf::from("a/b"));
+    }
+
+    #[test]
+    fn normalize_path_empty_result() {
+        assert_eq!(normalize_path(Path::new("")), PathBuf::from(""));
+    }
+
+    #[test]
+    fn split_fragment_with_hash() {
+        assert_eq!(split_fragment("file.md#section"), ("file.md", "#section"));
+    }
+
+    #[test]
+    fn split_fragment_with_query() {
+        assert_eq!(split_fragment("file.md?q=1"), ("file.md", "?q=1"));
+    }
+
+    #[test]
+    fn split_fragment_no_fragment() {
+        assert_eq!(split_fragment("file.md"), ("file.md", ""));
+    }
+
+    #[test]
+    fn render_dir_rewrites_md_links() {
+        let html = render_dir(
+            "# Hello\n\n[guide](docs/guide.md)",
+            None,
+            Path::new("README.md"),
+        );
+        assert!(
+            html.contains("href=\"/view/docs/guide.md\""),
+            "should rewrite .md link to /view/ route, got: {html}"
+        );
+    }
+
+    #[test]
+    fn render_dir_preserves_fragment() {
+        let html = render_dir("[link](other.md#section)", None, Path::new("README.md"));
+        assert!(
+            html.contains("href=\"/view/other.md#section\""),
+            "should preserve fragment, got: {html}"
+        );
+    }
+
+    #[test]
+    fn render_dir_non_md_to_local() {
+        let html = render_dir("[dl](file.zip)", None, Path::new("README.md"));
+        assert!(
+            html.contains("href=\"file.zip\""),
+            "non-md links should pass through unchanged, got: {html}"
+        );
+    }
+
+    #[test]
+    fn render_dir_external_unchanged() {
+        let html = render_dir("[ext](https://example.com)", None, Path::new("README.md"));
+        assert!(
+            html.contains("href=\"https://example.com\""),
+            "external links should be unchanged, got: {html}"
+        );
+    }
+
+    #[test]
+    fn render_dir_anchor_unchanged() {
+        let html = render_dir("[section](#heading)", None, Path::new("README.md"));
+        assert!(
+            html.contains("href=\"#heading\""),
+            "anchor links should be unchanged, got: {html}"
+        );
+    }
+
+    #[test]
+    fn render_dir_parent_traversal() {
+        let html = render_dir("[back](../README.md)", None, Path::new("docs/guide.md"));
+        assert!(
+            html.contains("href=\"/view/README.md\""),
+            "../ should resolve relative to file dir, got: {html}"
+        );
+    }
+
+    #[test]
+    fn render_dir_images_resolve_relative_to_file() {
+        let html = render_dir("![img](img/photo.png)", None, Path::new("docs/guide.md"));
+        assert!(
+            html.contains("src=\"/local/docs/img/photo.png\""),
+            "images should resolve relative to file dir, got: {html}"
+        );
+    }
+
+    #[test]
+    fn render_without_dir_does_not_rewrite_links() {
+        let html = render("[link](other.md)", None);
+        assert!(
+            html.contains("href=\"other.md\""),
+            "plain render should not rewrite links, got: {html}"
+        );
+    }
 }

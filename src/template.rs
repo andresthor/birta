@@ -18,6 +18,7 @@ pub struct PageOptions<'a> {
     pub theme_names: &'a [&'a str],
     pub static_mode: bool,
     pub keybindings_json: &'a str,
+    pub current_path: Option<&'a str>,
 }
 
 pub fn render_page(opts: &PageOptions<'_>) -> String {
@@ -119,6 +120,7 @@ pub fn render_page(opts: &PageOptions<'_>) -> String {
             if opts.static_mode { "true" } else { "false" },
         )
         .replace("{{KEYBINDINGS_JSON}}", opts.keybindings_json)
+        .replace("{{CURRENT_PATH}}", opts.current_path.unwrap_or(""))
         .replace("{{CONTENT}}", content_html)
 }
 
@@ -157,6 +159,7 @@ mod tests {
             theme_names: &["github"],
             static_mode: false,
             keybindings_json: "{}",
+            current_path: None,
         })
     }
 
@@ -210,6 +213,7 @@ mod tests {
             theme_names,
             static_mode,
             keybindings_json: "{}",
+            current_path: None,
         })
     }
 
