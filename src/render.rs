@@ -74,6 +74,31 @@ pub fn render_dir(
     render_with_mode(markdown, syntax_theme, RewriteMode::Directory { file_dir })
 }
 
+/// Format file stats for the raw-mode file header, e.g. "215 lines (154 loc) · 5.25 KB".
+///
+/// - `lines`: total line count via `str::lines` (matches `render_source` and GitHub)
+/// - `loc`: non-empty lines (lines of "code")
+/// - size: UTF-8 byte length of the markdown, formatted as B/KB/MB
+pub fn format_file_stats(markdown: &str) -> String {
+    let lines = markdown.lines().count();
+    let loc = markdown.lines().filter(|l| !l.trim().is_empty()).count();
+    let size = format_size(markdown.len());
+    format!("{lines} lines ({loc} loc) · {size}")
+}
+
+fn format_size(bytes: usize) -> String {
+    const KB: f64 = 1024.0;
+    const MB: f64 = 1024.0 * 1024.0;
+    let b = bytes as f64;
+    if b >= MB {
+        format!("{:.2} MB", b / MB)
+    } else if b >= KB {
+        format!("{:.2} KB", b / KB)
+    } else {
+        format!("{bytes} B")
+    }
+}
+
 /// Render markdown source as syntax-highlighted HTML for raw mode.
 ///
 /// Returns a side-by-side layout with line numbers and highlighted source:
@@ -286,6 +311,49 @@ pub(crate) fn html_escape(s: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn format_file_stats_empty() {
+        assert_eq!(format_file_stats(""), "0 lines (0 loc) · 0 B");
+    }
+
+    #[test]
+    fn format_file_stats_small_file() {
+        assert_eq!(format_file_stats("hello"), "1 lines (1 loc) · 5 B");
+    }
+
+    #[test]
+    fn format_file_stats_trailing_newline_matches_render_source() {
+        // Rust's lines() strips one trailing newline: "foo\n" -> 1 line.
+        // render_source uses the same logic, so the stats line count matches
+        // what the user sees in the gutter.
+        assert_eq!(format_file_stats("foo\n"), "1 lines (1 loc) · 4 B");
+    }
+
+    #[test]
+    fn format_file_stats_counts_blank_lines_in_total_but_not_loc() {
+        let md = "a\n\nb\n\n\nc\n";
+        // 6 newline-terminated lines, 3 non-empty.
+        assert_eq!(format_file_stats(md), "6 lines (3 loc) · 9 B");
+    }
+
+    #[test]
+    fn format_file_stats_kb_boundary() {
+        let md = "a".repeat(2048);
+        assert_eq!(format_file_stats(&md), "1 lines (1 loc) · 2.00 KB");
+    }
+
+    #[test]
+    fn format_file_stats_mb_threshold() {
+        let md = "a".repeat(2 * 1024 * 1024);
+        let s = format_file_stats(&md);
+        assert!(s.ends_with("2.00 MB"), "got: {s}");
+    }
+
+    #[test]
+    fn format_file_stats_whitespace_only_line_not_counted_as_loc() {
+        assert_eq!(format_file_stats("a\n   \nb"), "3 lines (2 loc) · 7 B");
+    }
 
     #[test]
     fn normalize_path_collapses_parent() {

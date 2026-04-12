@@ -268,12 +268,14 @@ fn run_static(file: &std::path::Path, opts: StaticOptions<'_>) -> anyhow::Result
     let syntax = opts.theme.active_data().syntax.as_ref();
     let content_html = birta::render::render_static(&markdown, syntax, &base_dir);
     let source_html = birta::render::render_source(&markdown, syntax);
+    let file_stats = birta::render::format_file_stats(&markdown);
 
     let page = birta::template::render_page(&birta::template::PageOptions {
         filename: &file
             .file_name()
             .map(|n| n.to_string_lossy().into_owned())
             .unwrap_or_else(|| "untitled".to_string()),
+        file_stats: &file_stats,
         content_html: &content_html,
         source_html: Some(&source_html),
         custom_css: opts.custom_css,

@@ -22,6 +22,7 @@ pub(crate) struct ContentUpdate {
     pub(crate) relpath: String,
     pub(crate) rendered_html: String,
     pub(crate) source_html: String,
+    pub(crate) file_stats: String,
 }
 
 const SHUTDOWN_GRACE_PERIOD: Duration = Duration::from_secs(5);
@@ -53,6 +54,8 @@ pub(crate) struct AppState {
     pub(crate) current_html: RwLock<String>,
     /// Syntax-highlighted source HTML for the code view.
     pub(crate) current_source_html: RwLock<String>,
+    /// Formatted file stats string (e.g. "215 lines (154 loc) · 5.25 KB") for the raw-mode header.
+    pub(crate) current_file_stats: RwLock<String>,
     /// Sends content updates from the watcher.
     pub(crate) tx: broadcast::Sender<ContentUpdate>,
     /// Sends ready-to-send JSON strings (theme_update messages).
@@ -111,6 +114,7 @@ pub async fn run_stdin(markdown: &str, opts: ServerOptions) -> anyhow::Result<()
     let syntax = opts.theme.active_data().syntax.as_ref();
     let content_html = render::render(markdown, syntax);
     let source_html = render::render_source(markdown, syntax);
+    let file_stats = render::format_file_stats(markdown);
 
     let mut registry = ThemeRegistry::new(opts.theme);
     if opts.enable_swap {
@@ -130,6 +134,7 @@ pub async fn run_stdin(markdown: &str, opts: ServerOptions) -> anyhow::Result<()
         custom_css: opts.custom_css,
         current_html: RwLock::new(content_html),
         current_source_html: RwLock::new(source_html),
+        current_file_stats: RwLock::new(file_stats),
         tx,
         theme_tx,
         scroll_tx,
@@ -178,6 +183,7 @@ pub async fn start(
         render::render(&markdown, syntax)
     };
     let source_html = render::render_source(&markdown, syntax);
+    let file_stats = render::format_file_stats(&markdown);
 
     let filename = file
         .file_name()
@@ -206,6 +212,7 @@ pub async fn start(
         custom_css: opts.custom_css,
         current_html: RwLock::new(content_html),
         current_source_html: RwLock::new(source_html),
+        current_file_stats: RwLock::new(file_stats),
         tx: tx.clone(),
         theme_tx,
         scroll_tx,
@@ -228,6 +235,7 @@ pub async fn start(
             if state_for_task.initial_relpath.as_deref() == Some(&update.relpath) {
                 *state_for_task.current_html.write().await = update.rendered_html;
                 *state_for_task.current_source_html.write().await = update.source_html;
+                *state_for_task.current_file_stats.write().await = update.file_stats;
             }
         }
     });
@@ -327,8 +335,10 @@ async fn index_handler(State(state): State<Arc<AppState>>) -> Response {
     let theme_names: Vec<&str> = registry.theme_names();
     let content_html = state.current_html.read().await;
     let source_html = state.current_source_html.read().await;
+    let file_stats = state.current_file_stats.read().await;
     let page = template::render_page(&template::PageOptions {
         filename: &state.filename,
+        file_stats: &file_stats,
         content_html: &content_html,
         source_html: Some(&source_html),
         custom_css: state.custom_css.as_deref(),
@@ -395,6 +405,7 @@ async fn view_handler(Path(path): Path<String>, State(state): State<Arc<AppState
 
     let html = render::render_dir(&markdown, syntax_theme.as_ref(), StdPath::new(&path));
     let source_html = render::render_source(&markdown, syntax_theme.as_ref());
+    let file_stats = render::format_file_stats(&markdown);
 
     let filename = canonical
         .file_name()
@@ -406,6 +417,7 @@ async fn view_handler(Path(path): Path<String>, State(state): State<Arc<AppState
     let theme_names: Vec<&str> = registry.theme_names();
     let page = template::render_page(&template::PageOptions {
         filename: &filename,
+        file_stats: &file_stats,
         content_html: &html,
         source_html: Some(&source_html),
         custom_css: state.custom_css.as_deref(),
@@ -662,10 +674,12 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
     // Send initial content as JSON
     let current = state.current_html.read().await.clone();
     let current_source = state.current_source_html.read().await.clone();
+    let current_file_stats = state.current_file_stats.read().await.clone();
     let init_msg = serde_json::json!({
         "type": "content",
         "html": current,
         "source": current_source,
+        "file_stats": current_file_stats,
         "path": state.initial_relpath.as_deref().unwrap_or(""),
     });
     if socket
@@ -691,6 +705,7 @@ async fn handle_ws(mut socket: WebSocket, state: Arc<AppState>) {
                             "type": "content",
                             "html": update.rendered_html,
                             "source": update.source_html,
+                            "file_stats": update.file_stats,
                             "path": update.relpath,
                         });
                         if socket.send(Message::Text(msg.to_string().into())).await.is_err() {
@@ -775,6 +790,7 @@ mod tests {
             custom_css: None,
             current_html: RwLock::new("<p>hello</p>".to_string()),
             current_source_html: RwLock::new(String::new()),
+            current_file_stats: RwLock::new(String::new()),
             tx,
             theme_tx,
             scroll_tx,
@@ -855,6 +871,7 @@ mod tests {
             custom_css: None,
             current_html: RwLock::new("<p>hello</p>".to_string()),
             current_source_html: RwLock::new(String::new()),
+            current_file_stats: RwLock::new(String::new()),
             tx,
             theme_tx,
             scroll_tx,
@@ -1013,6 +1030,7 @@ mod tests {
             custom_css: None,
             current_html: RwLock::new("<p>hello</p>".to_string()),
             current_source_html: RwLock::new(String::new()),
+            current_file_stats: RwLock::new(String::new()),
             tx,
             theme_tx,
             scroll_tx,

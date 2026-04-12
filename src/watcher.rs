@@ -78,10 +78,12 @@ pub(crate) fn watch_dir(
                     std::path::Path::new(&relpath),
                 );
                 let source = render::render_source(&markdown, syntax_theme.as_ref());
+                let file_stats = render::format_file_stats(&markdown);
                 let _ = tx.send(ContentUpdate {
                     relpath,
                     rendered_html: html,
                     source_html: source,
+                    file_stats,
                 });
             }
         },

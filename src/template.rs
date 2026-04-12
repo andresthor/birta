@@ -9,6 +9,7 @@ const THEME_OVERRIDES: &str = include_str!("../assets/theme-overrides.css");
 
 pub struct PageOptions<'a> {
     pub filename: &'a str,
+    pub file_stats: &'a str,
     pub content_html: &'a str,
     pub source_html: Option<&'a str>,
     pub custom_css: Option<&'a str>,
@@ -120,6 +121,7 @@ pub fn render_page(opts: &PageOptions<'_>) -> String {
         .replace("{{THEME_OPTIONS}}", &theme_options)
         .replace("{{VARIANTS_JSON}}", &variants_json)
         .replace("{{FILENAME}}", filename)
+        .replace("{{FILE_STATS}}", opts.file_stats)
         .replace(
             "{{STATIC_MODE}}",
             if opts.static_mode { "true" } else { "false" },
@@ -160,6 +162,7 @@ mod tests {
         let theme = github_theme();
         render_page(&PageOptions {
             filename: "test.md",
+            file_stats: "1 lines (1 loc) · 5 B",
             content_html: content,
             source_html: None,
             custom_css,
@@ -179,6 +182,12 @@ mod tests {
     fn render_page_contains_filename() {
         let page = test_page("<p>hello</p>", None);
         assert!(page.contains("test.md"));
+    }
+
+    #[test]
+    fn render_page_contains_file_stats() {
+        let page = test_page("<p>hello</p>", None);
+        assert!(page.contains("1 lines (1 loc) · 5 B"));
     }
 
     #[test]
@@ -216,6 +225,7 @@ mod tests {
     ) -> String {
         render_page(&PageOptions {
             filename: "test.md",
+            file_stats: "1 lines (1 loc) · 7 B",
             content_html: "<p>test</p>",
             source_html: None,
             custom_css: None,

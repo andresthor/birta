@@ -175,6 +175,7 @@ pub struct SyntaxRef {
 const CSS_VAR_MAP: &[(&str, &str, bool)] = &[
     ("fg_primary", "--fgColor-default", true),
     ("fg_muted", "--fgColor-muted", true),
+    ("fg_muted", "--birta-fg-muted", false),
     ("fg_accent", "--fgColor-accent", true),
     ("bg_primary", "--bgColor-default", true),
     ("bg_muted", "--bgColor-muted", true),

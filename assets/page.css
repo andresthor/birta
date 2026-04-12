@@ -10,6 +10,7 @@
 
 :root {
   --birta-fg: #1f2328;
+  --birta-fg-muted: #59636e;
   --birta-bg: #ffffff;
   --birta-bg-secondary: #f6f8fa;
   --birta-border: #d1d9e0;
@@ -17,6 +18,7 @@
 
 [data-theme="dark"] {
   --birta-fg: #e6edf3;
+  --birta-fg-muted: #9198a1;
   --birta-bg: #0d1117;
   --birta-bg-secondary: #161b22;
   --birta-border: #30363d;
@@ -25,6 +27,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --birta-fg: #e6edf3;
+    --birta-fg-muted: #9198a1;
     --birta-bg: #0d1117;
     --birta-bg-secondary: #161b22;
     --birta-border: #30363d;
@@ -191,6 +194,7 @@ html, body {
 .file-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding: 8px 16px;
   background-color: var(--birta-bg-secondary);
@@ -198,13 +202,20 @@ html, body {
   border-radius: 6px 6px 0 0;
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 12px;
-  line-height: 32px;
+  line-height: 1.5;
+}
+
+/* File header left section */
+.file-header-left {
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+  height: 26px;
 }
 
 /* View toggle (Preview / Raw) — segmented control in file header */
 .view-toggle {
   display: flex;
-  margin-left: auto;
   border: 1px solid var(--birta-border);
   border-radius: 6px;
   overflow: hidden;
@@ -212,9 +223,10 @@ html, body {
 
 .view-btn {
   display: flex;
+  height: 26px;
   align-items: center;
   justify-content: center;
-  padding: 4px 10px;
+  padding: 0 8px;
   background: none;
   border: none;
   border-right: 1px solid var(--birta-border);
@@ -249,6 +261,17 @@ html, body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transform: translateY(1px);
+}
+
+.file-stats {
+  margin-left: 8px;
+  color: var(--birta-fg-muted);
+  font-weight: 400;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height:1.5;
+  transform: translateY(1px);
 }
 
 @media (max-width: 767px) {
